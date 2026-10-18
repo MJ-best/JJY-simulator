@@ -5,63 +5,274 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>JJY Simulator</title>
 <style>
-  :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
-  body { max-width: 34rem; margin: 0 auto; padding: 1rem; line-height: 1.5; }
-  label { display: block; margin: .75rem 0; }
-  select, button { font: inherit; width: 100%; padding: .6rem; margin-top: .25rem; }
-  button { font-size: 1.25rem; font-weight: bold; }
-  #clock { font-size: 2rem; font-variant-numeric: tabular-nums; margin: 1rem 0 .25rem; }
-  #bits { font-family: ui-monospace, monospace; word-break: break-all; letter-spacing: .1em; }
-  #bits b { background: #f80; color: #000; }
-  .warn { color: #d33; }
+  :root {
+    color-scheme: light dark;
+    --bg: #f4f5f7; --card: #fff; --fg: #1b1d21; --muted: #6b7280; --line: #e3e5e8;
+    --accent: #2563eb; --accent-fg: #fff; --sea: #dbe7f3; --land: #b9c7b0; --band: #2563eb33; --grid: #ffffffaa;
+    --on: #f59e0b; --stop: #dc2626;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --card: #1a1d23; --fg: #e8eaed; --muted: #9aa0a6; --line: #2a2e35;
+      --accent: #60a5fa; --accent-fg: #0b1220; --sea: #13233a; --land: #3b4a3a; --band: #60a5fa40; --grid: #ffffff22;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; }
+  main { max-width: 44rem; margin: 0 auto; padding: 1rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  h1 { margin: .5rem 0 0; font-size: 1.5rem; }
+  h1 + p { margin: 0; color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 1rem; }
+  .hint { color: var(--muted); font-size: .85rem; margin: .5rem 0 0; }
+
+  .map { overflow-x: auto; border-radius: 12px; -webkit-overflow-scrolling: touch; }
+  .map svg { display: block; width: 100%; min-width: 720px; cursor: crosshair; }
+  .sea { fill: var(--sea); } .land { fill: var(--land); } .band { fill: var(--band); }
+  .grid line { stroke: var(--grid); }
+  .grid text { fill: var(--muted); font-size: 13px; text-anchor: middle; }
+  .dots circle { fill: var(--fg); opacity: .55; }
+  .dots circle.on { fill: var(--accent); opacity: 1; r: 7; }
+  #pin { fill: var(--fg); font-size: 18px; font-weight: 700; paint-order: stroke; stroke: var(--card); stroke-width: 4px; pointer-events: none; }
+
+  .now { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: .25rem 1rem; }
+  #city { font-size: 1.25rem; font-weight: 700; }
+  #utc { color: var(--muted); }
+  #time { font-size: 3rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  #date { color: var(--muted); }
+  select { font: inherit; width: 100%; padding: .6rem; margin-top: .75rem; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+  .seg label { border: 1px solid var(--line); border-radius: 10px; padding: .6rem; text-align: center; cursor: pointer; }
+  .seg input { position: absolute; opacity: 0; }
+  .seg label:has(:checked) { border-color: var(--accent); background: var(--band); font-weight: 700; }
+  .seg label:has(:focus-visible) { outline: 2px solid var(--accent); }
+  #go { width: 100%; margin-top: .75rem; padding: 1rem; font: 700 1.25rem system-ui, sans-serif; border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-fg); cursor: pointer; }
+  #go.running { background: var(--stop); color: #fff; }
+
+  .status { display: flex; align-items: center; gap: .5rem; margin-top: .75rem; color: var(--muted); }
+  #lamp { width: 14px; height: 14px; border-radius: 50%; background: var(--line); }
+  #lamp.on { background: var(--on); box-shadow: 0 0 10px var(--on); }
+  #bits { display: flex; align-items: flex-end; gap: 1px; height: 40px; margin-top: .75rem; }
+  #bits i { flex: 1; background: var(--muted); opacity: .45; border-radius: 1px; }
+  #bits i.m { background: var(--fg); opacity: .8; }
+  #bits i.cur { background: var(--on); opacity: 1; }
+
+  .warn { color: var(--stop); font-weight: 600; margin: 0; }
+  details summary { cursor: pointer; font-weight: 600; }
 </style>
 </head>
 <body>
-<h1>JJY Simulator</h1>
+<main>
+  <header>
+    <h1>JJY Simulator</h1>
+    <p>유선 이어폰으로 전파시계 맞추기 · 시티즌 PMD 기준</p>
+  </header>
 
-<label>시계에 표시할 시간대
-  <select id="tz"></select>
-</label>
-<label>주파수
-  <select id="freq">
-    <option value="13333.333">JJY 40kHz (13.333kHz의 3배음)</option>
-    <option value="20000">JJY 60kHz (20kHz의 3배음)</option>
-  </select>
-</label>
-<button id="go">▶ 송신 시작</button>
+  <section class="card">
+    <div class="map" id="map">
+      <svg id="svg" viewBox="0 20 1000 390" role="img" aria-label="세계 지도. 눌러서 시간대 선택">
+        <rect class="sea" width="1000" height="500"/>
+        <rect class="band" id="band" y="0" height="500" width="41.67"/>
+        <path class="land" id="land"/>
+        <g class="grid" id="grid"></g>
+        <g class="dots" id="dots"></g>
+        <text id="pin"></text>
+      </svg>
+    </div>
+    <p class="hint">지도에서 가고 싶은 곳을 누르면 가장 가까운 도시의 시간대가 선택됩니다. 파란 띠 = 그 시간대(경도 15° 단위).</p>
+  </section>
 
-<div id="clock"></div>
-<div id="bits"></div>
+  <section class="card">
+    <div class="now"><span id="city"></span><span id="utc"></span></div>
+    <div id="time"></div>
+    <div id="date"></div>
+    <select id="tz" aria-label="시간대 목록에서 고르기"></select>
+  </section>
 
-<h2>사용법</h2>
-<ol>
-  <li>유선 이어폰을 연결하고 볼륨을 최대로.</li>
-  <li>시계를 이어폰 케이블 바로 옆(수 cm)에 둔다. 케이블을 시계에 몇 바퀴 감으면 잘 잡힌다.</li>
-  <li>송신 시작 후 시계를 <b>강제 수신</b> 모드로 (방법은 시계 설명서 참고). 수신에 2~10분 걸린다.</li>
-  <li>송신 중엔 화면을 켜둔다 (자동으로 꺼짐 방지 요청함).</li>
-</ol>
-<p class="warn">⚠ 고주파 소리가 크게 나므로 이어폰을 귀에 꽂지 마세요. 블루투스 이어폰은 동작하지 않습니다.</p>
-<p>시간대를 바꾸면 그 지역 현지 시각을 일본시(JST)인 것처럼 송신합니다. 시계의 시차 설정 없이 현지 시각으로 맞춰집니다. 기본값은 이 기기의 시간대.</p>
+  <section class="card">
+    <div class="seg" role="radiogroup" aria-label="주파수">
+      <label><input type="radio" name="freq" value="13333.333" checked> 40kHz</label>
+      <label><input type="radio" name="freq" value="20000"> 60kHz</label>
+    </div>
+    <button id="go">▶ 송신 시작</button>
+    <div class="status"><span id="lamp"></span><span id="state">대기 중</span></div>
+    <div id="bits" aria-hidden="true"></div>
+  </section>
+
+  <section class="card">
+    <p class="warn">⚠ 고음이 크게 나므로 이어폰을 귀에 꽂지 마세요. 블루투스 이어폰은 안 됩니다.</p>
+    <details>
+      <summary>사용법</summary>
+      <ol>
+        <li>유선 이어폰을 연결하고 볼륨을 최대로.</li>
+        <li>시계를 이어폰 케이블 바로 옆(수 cm)에 둔다. 케이블을 시계에 몇 바퀴 감으면 잘 잡힌다.</li>
+        <li>송신 시작 후 시계를 <b>강제 수신</b> 모드로 (방법은 시계 설명서 참고). 수신에 2~10분.</li>
+        <li>송신 중엔 화면을 켜둔다. 안 잡히면 주파수를 바꿔 본다.</li>
+      </ol>
+      <p>시계는 받은 시각을 무조건 일본 시각(JST)으로 여깁니다. 그래서 고른 곳의 현지 시각을 JST 자리에 넣어 보내면, 시계의 시차 설정 없이 현지 시각으로 맞춰집니다. 기본값은 이 기기의 시간대.</p>
+    </details>
+  </section>
+</main>
 
 <script type="module">
 import { fields, frame, HIGH } from './jjy.js';
 
 const $ = id => document.getElementById(id);
-const device = Intl.DateTimeFormat().resolvedOptions().timeZone;
-for (const z of new Set([device, 'Asia/Tokyo', ...Intl.supportedValuesOf('timeZone')]))
-  $('tz').add(new Option(z === device ? `${z} (이 기기)` : z, z));
+const W = 1000, H = 500, NS = 'http://www.w3.org/2000/svg';
+const X = lon => (lon + 180) / 360 * W, Y = lat => (90 - lat) / 180 * H;
 
+// [IANA zone, lat, lon, name], west to east
+const CITIES = [
+  ['Pacific/Pago_Pago', -14.28, -170.7, '아메리칸사모아'],
+  ['Pacific/Honolulu', 21.31, -157.86, '호놀룰루'],
+  ['America/Anchorage', 61.22, -149.9, '앵커리지'],
+  ['America/Vancouver', 49.28, -123.12, '밴쿠버'],
+  ['America/Los_Angeles', 34.05, -118.24, '로스앤젤레스'],
+  ['America/Phoenix', 33.45, -112.07, '피닉스'],
+  ['America/Denver', 39.74, -104.99, '덴버'],
+  ['America/Mexico_City', 19.43, -99.13, '멕시코시티'],
+  ['America/Chicago', 41.88, -87.63, '시카고'],
+  ['America/Cancun', 21.16, -86.85, '칸쿤'],
+  ['America/Toronto', 43.65, -79.38, '토론토'],
+  ['America/Lima', -12.05, -77.04, '리마'],
+  ['America/New_York', 40.71, -74.01, '뉴욕'],
+  ['America/Bogota', 4.71, -74.07, '보고타'],
+  ['America/Santiago', -33.45, -70.67, '산티아고'],
+  ['America/Halifax', 44.65, -63.57, '핼리팩스'],
+  ['America/Argentina/Buenos_Aires', -34.6, -58.38, '부에노스아이레스'],
+  ['America/Sao_Paulo', -23.55, -46.63, '상파울루'],
+  ['Atlantic/Reykjavik', 64.15, -21.94, '레이캬비크'],
+  ['Europe/Lisbon', 38.72, -9.14, '리스본'],
+  ['Europe/London', 51.51, -0.13, '런던'],
+  ['Europe/Madrid', 40.42, -3.7, '마드리드'],
+  ['Europe/Paris', 48.86, 2.35, '파리'],
+  ['Africa/Lagos', 6.52, 3.38, '라고스'],
+  ['Europe/Rome', 41.9, 12.5, '로마'],
+  ['Europe/Berlin', 52.52, 13.4, '베를린'],
+  ['Europe/Athens', 37.98, 23.73, '아테네'],
+  ['Europe/Helsinki', 60.17, 24.94, '헬싱키'],
+  ['Africa/Johannesburg', -26.2, 28.05, '요하네스버그'],
+  ['Europe/Istanbul', 41.01, 28.98, '이스탄불'],
+  ['Africa/Cairo', 30.04, 31.24, '카이로'],
+  ['Africa/Nairobi', -1.29, 36.82, '나이로비'],
+  ['Europe/Moscow', 55.76, 37.62, '모스크바'],
+  ['Asia/Tehran', 35.69, 51.39, '테헤란'],
+  ['Asia/Dubai', 25.2, 55.27, '두바이'],
+  ['Asia/Karachi', 24.86, 67.01, '카라치'],
+  ['Asia/Almaty', 43.24, 76.89, '알마티'],
+  ['Asia/Kolkata', 28.61, 77.21, '델리'],
+  ['Asia/Kathmandu', 27.72, 85.32, '카트만두'],
+  ['Asia/Dhaka', 23.81, 90.41, '다카'],
+  ['Asia/Bangkok', 13.76, 100.5, '방콕'],
+  ['Asia/Singapore', 1.35, 103.82, '싱가포르'],
+  ['Asia/Ho_Chi_Minh', 10.82, 106.63, '호찌민'],
+  ['Asia/Jakarta', -6.21, 106.85, '자카르타'],
+  ['Asia/Ulaanbaatar', 47.89, 106.91, '울란바토르'],
+  ['Asia/Hong_Kong', 22.32, 114.17, '홍콩'],
+  ['Asia/Makassar', -8.65, 115.22, '발리'],
+  ['Australia/Perth', -31.95, 115.86, '퍼스'],
+  ['Asia/Shanghai', 39.9, 116.4, '베이징'],
+  ['Asia/Manila', 14.6, 120.98, '마닐라'],
+  ['Asia/Taipei', 25.03, 121.57, '타이베이'],
+  ['Asia/Seoul', 37.57, 126.98, '서울'],
+  ['Australia/Darwin', -12.46, 130.84, '다윈'],
+  ['Asia/Vladivostok', 43.12, 131.89, '블라디보스토크'],
+  ['Australia/Adelaide', -34.93, 138.6, '애들레이드'],
+  ['Asia/Tokyo', 35.68, 139.69, '도쿄'],
+  ['Pacific/Guam', 13.44, 144.79, '괌'],
+  ['Pacific/Saipan', 15.18, 145.75, '사이판'],
+  ['Australia/Sydney', -33.87, 151.21, '시드니'],
+  ['Australia/Brisbane', -27.47, 153.03, '브리즈번'],
+  ['Pacific/Auckland', -36.85, 174.76, '오클랜드'],
+  ['Pacific/Fiji', -18.14, 178.44, '피지'],
+];
+const city = z => CITIES.find(c => c[0] === z);
+const nameOf = z => city(z)?.[3] ?? z.split('/').pop().replace(/_/g, ' ');
+const device = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+// --- zone list ---
+for (const [label, zones] of [
+  ['주요 도시', new Set([device, ...CITIES.map(c => c[0])])],
+  ['전체 시간대', Intl.supportedValuesOf('timeZone')],
+]) {
+  const g = document.createElement('optgroup');
+  g.label = label;
+  for (const z of zones) g.append(new Option(`${nameOf(z)}${z === device ? ' · 이 기기' : ''} (${z})`, z));
+  $('tz').append(g);
+}
+$('tz').value = device;
+
+// --- map ---
+const el = (tag, attrs, parent) => {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return parent.appendChild(e);
+};
+for (let k = -12; k <= 12; k++) {
+  if (k < 12) el('line', { x1: X(k * 15 + 7.5), x2: X(k * 15 + 7.5), y1: 0, y2: H }, $('grid'));
+  el('text', { x: X(k * 15), y: 36 }, $('grid')).textContent = (k > 0 ? '+' : '') + k;
+}
+for (const [z, lat, lon, name] of CITIES)
+  el('circle', { cx: X(lon), cy: Y(lat), r: 4, 'data-zone': z }, $('dots'))
+    .appendChild(document.createElementNS(NS, 'title')).textContent = name;
+
+Promise.all([
+  import('https://cdn.jsdelivr.net/npm/d3-geo@3.1.1/+esm'),
+  import('https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/+esm'),
+  fetch('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/land-110m.json').then(r => r.json()),
+]).then(([d3, topo, world]) => {
+  const proj = d3.geoEquirectangular().scale(W / 2 / Math.PI).translate([W / 2, H / 2]); // same as X/Y
+  $('land').setAttribute('d', d3.geoPath(proj)(topo.feature(world, world.objects.land)));
+}).catch(e => console.warn('map unavailable, list still works', e));
+
+$('svg').onclick = e => {
+  const p = new DOMPoint(e.clientX, e.clientY).matrixTransform($('svg').getScreenCTM().inverse());
+  const lon = p.x / W * 360 - 180, lat = 90 - p.y / H * 180, k = Math.cos(lat * Math.PI / 180);
+  const dist = c => (c[1] - lat) ** 2 + ((((c[2] - lon) % 360 + 540) % 360 - 180) * k) ** 2;
+  $('tz').value = CITIES.reduce((a, b) => (dist(b) < dist(a) ? b : a))[0];
+  $('tz').onchange();
+};
+
+const offsetMin = (d, tz) => {
+  const f = fields(d, tz);
+  return (Date.UTC(f.y, 0, f.doy, f.h, f.m) - Math.floor(d / 6e4) * 6e4) / 6e4;
+};
+const fmtOffset = m => `UTC${m < 0 ? '−' : '+'}${Math.trunc(Math.abs(m) / 60)}${m % 60 ? ':' + String(Math.abs(m % 60)).padStart(2, '0') : ''}`;
+
+let lastSec;
+function showZone(behavior = 'smooth') {
+  const tz = $('tz').value, off = offsetMin(new Date(), tz), c = city(tz);
+  $('band').setAttribute('x', X(off / 4 - 7.5));
+  for (const d of $('dots').children) d.classList.toggle('on', d.dataset.zone === tz);
+  $('pin').textContent = c ? c[3] : '';
+  if (c) {
+    const east = c[2] > 140;
+    $('pin').setAttribute('x', X(c[2]) + (east ? -12 : 12));
+    $('pin').setAttribute('y', Y(c[1]) + 6);
+    $('pin').setAttribute('text-anchor', east ? 'end' : 'start');
+  }
+  $('city').textContent = nameOf(tz);
+  $('utc').textContent = fmtOffset(off);
+  lastSec = null;
+  const px = X(c ? c[2] : off / 4) / W * $('svg').clientWidth;
+  $('map').scrollTo({ left: px - $('map').clientWidth / 2, behavior });
+}
+
+// --- audio ---
 let ctx, gain, wake, next;
+const freq = () => +document.querySelector('[name=freq]:checked').value;
 
 async function start() {
   if (navigator.audioSession) navigator.audioSession.type = 'playback'; // iOS: ignore silent switch
   ctx = new AudioContext();
-  const osc = new OscillatorNode(ctx, { frequency: +$('freq').value });
+  const osc = new OscillatorNode(ctx, { frequency: freq() });
   gain = new GainNode(ctx, { gain: 0 });
   osc.connect(gain).connect(ctx.destination);
   osc.start();
   next = Math.ceil(Date.now() / 1000) * 1000;
   $('go').textContent = '■ 송신 중지';
+  $('go').classList.add('running');
+  $('state').textContent = `송신 중 · ${Math.round(freq() * 3 / 1000)}kHz`;
   wake = await navigator.wakeLock?.request('screen').catch(() => null);
 }
 
@@ -70,6 +281,8 @@ function stop() {
   wake?.release();
   ctx = wake = null;
   $('go').textContent = '▶ 송신 시작';
+  $('go').classList.remove('running');
+  $('state').textContent = '대기 중';
 }
 
 // Queue each second's pulse ~3 s ahead on the audio clock.
@@ -89,18 +302,28 @@ function schedule() {
   }
 }
 
+// --- display ---
 function render() {
-  const now = new Date(), tz = $('tz').value;
-  $('clock').textContent = now.toLocaleString('ko-KR', { timeZone: tz, hourCycle: 'h23' });
-  const s = now.getUTCSeconds();
-  $('bits').innerHTML = frame(fields(now, tz)).map((b, i) => i === s && ctx ? `<b>${b}</b>` : b).join('');
+  const now = new Date(), tz = $('tz').value, s = now.getUTCSeconds();
+  const f = fields(now, tz), bits = frame(f);
+  $('lamp').classList.toggle('on', !!ctx && now % 1000 < HIGH[bits[s]] * 1000);
+  if (s === lastSec) return;
+  lastSec = s;
+  const p = n => String(n).padStart(2, '0');
+  $('time').textContent = `${p(f.h)}:${p(f.m)}:${p(s)}`;
+  $('date').textContent = now.toLocaleDateString('ko-KR', { timeZone: tz, year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+  $('bits').innerHTML = bits.map((b, i) =>
+    `<i class="${b === 'M' ? 'm' : ''}${i === s && ctx ? ' cur' : ''}" style="height:${HIGH[b] * 100}%"></i>`).join('');
 }
 
-setInterval(() => { if (ctx) schedule(); render(); }, 200);
+setInterval(() => { if (ctx) schedule(); render(); }, 50);
+showZone('instant');
 render();
 
+const restart = () => ctx && (stop(), start());
 $('go').onclick = () => (ctx ? stop() : start());
-$('tz').onchange = $('freq').onchange = () => ctx && (stop(), start());
+$('tz').onchange = () => { showZone(); restart(); };
+for (const r of document.getElementsByName('freq')) r.onchange = restart;
 </script>
 </body>
 </html>
