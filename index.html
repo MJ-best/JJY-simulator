@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>JJY Simulator</title>
+<meta name="description" content="Set a JJY radio-controlled watch through wired earphones, in any time zone. 유선 이어폰으로 전파시계 맞추기. 有線イヤホンで電波時計を合わせる。">
 <style>
   :root {
     color-scheme: light dark;
@@ -20,8 +21,12 @@
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; }
   main { max-width: 44rem; margin: 0 auto; padding: 1rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  header { display: grid; grid-template-columns: 1fr auto; align-items: center; }
   h1 { margin: .5rem 0 0; font-size: 1.5rem; }
-  h1 + p { margin: 0; color: var(--muted); }
+  header p { grid-column: 1 / -1; margin: 0; color: var(--muted); }
+  .langs { display: flex; gap: .75rem; font-size: .9rem; }
+  .langs a { color: var(--muted); text-decoration: none; }
+  .langs a[aria-current] { color: var(--fg); font-weight: 700; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 1rem; }
   .hint { color: var(--muted); font-size: .85rem; margin: .5rem 0 0; }
 
@@ -65,12 +70,13 @@
 <main>
   <header>
     <h1>JJY Simulator</h1>
-    <p>유선 이어폰으로 전파시계 맞추기 · 시티즌 PMD 기준</p>
+    <nav class="langs"><a href="?lang=ko" hreflang="ko">한국어</a><a href="?lang=en" hreflang="en">English</a><a href="?lang=ja" hreflang="ja">日本語</a></nav>
+    <p data-t="sub"></p>
   </header>
 
   <section class="card">
     <div class="map" id="map">
-      <svg id="svg" viewBox="0 20 1000 390" role="img" aria-label="세계 지도. 눌러서 시간대 선택">
+      <svg id="svg" viewBox="0 20 1000 390" role="img" data-aria="mapLabel">
         <rect class="sea" width="1000" height="500"/>
         <rect class="band" id="band" y="0" height="500" width="41.67"/>
         <path class="land" id="land"/>
@@ -79,37 +85,32 @@
         <text id="pin"></text>
       </svg>
     </div>
-    <p class="hint">지도에서 가고 싶은 곳을 누르면 가장 가까운 도시의 시간대가 선택됩니다. 파란 띠 = 그 시간대(경도 15° 단위).</p>
+    <p class="hint" data-t="hint"></p>
   </section>
 
   <section class="card">
     <div class="now"><span id="city"></span><span id="utc"></span></div>
     <div id="time"></div>
     <div id="date"></div>
-    <select id="tz" aria-label="시간대 목록에서 고르기"></select>
+    <select id="tz" data-aria="list"></select>
   </section>
 
   <section class="card">
-    <div class="seg" role="radiogroup" aria-label="주파수">
+    <div class="seg" role="radiogroup" data-aria="freq">
       <label><input type="radio" name="freq" value="13333.333" checked> 40kHz</label>
       <label><input type="radio" name="freq" value="20000"> 60kHz</label>
     </div>
-    <button id="go">▶ 송신 시작</button>
-    <div class="status"><span id="lamp"></span><span id="state">대기 중</span></div>
+    <button id="go" data-t="start"></button>
+    <div class="status"><span id="lamp"></span><span id="state" data-t="idle"></span></div>
     <div id="bits" aria-hidden="true"></div>
   </section>
 
   <section class="card">
-    <p class="warn">⚠ 고음이 크게 나므로 이어폰을 귀에 꽂지 마세요. 블루투스 이어폰은 안 됩니다.</p>
+    <p class="warn" data-t="warn"></p>
     <details>
-      <summary>사용법</summary>
-      <ol>
-        <li>유선 이어폰을 연결하고 볼륨을 최대로.</li>
-        <li>시계를 이어폰 케이블 바로 옆(수 cm)에 둔다. 케이블을 시계에 몇 바퀴 감으면 잘 잡힌다.</li>
-        <li>송신 시작 후 시계를 <b>강제 수신</b> 모드로 (방법은 시계 설명서 참고). 수신에 2~10분.</li>
-        <li>송신 중엔 화면을 켜둔다. 안 잡히면 주파수를 바꿔 본다.</li>
-      </ol>
-      <p>시계는 받은 시각을 무조건 일본 시각(JST)으로 여깁니다. 그래서 고른 곳의 현지 시각을 JST 자리에 넣어 보내면, 시계의 시차 설정 없이 현지 시각으로 맞춰집니다. 기본값은 이 기기의 시간대.</p>
+      <summary data-t="how"></summary>
+      <ol data-t="steps"></ol>
+      <p data-t="about"></p>
     </details>
   </section>
 </main>
@@ -118,91 +119,150 @@
 import { fields, frame, HIGH } from './jjy.js';
 
 const $ = id => document.getElementById(id);
-const W = 1000, H = 500, NS = 'http://www.w3.org/2000/svg';
-const X = lon => (lon + 180) / 360 * W, Y = lat => (90 - lat) / 180 * H;
 
-// [IANA zone, lat, lon, name], west to east
+// --- language ---
+const STR = {
+  ko: {
+    sub: '유선 이어폰으로 전파시계 맞추기 · 시티즌 PMD 기준',
+    mapLabel: '세계 지도. 눌러서 시간대 선택',
+    hint: '지도에서 가고 싶은 곳을 누르면 가장 가까운 도시의 시간대가 선택됩니다. 파란 띠 = 그 시간대(경도 15° 단위).',
+    list: '시간대 목록에서 고르기', freq: '주파수',
+    start: '▶ 송신 시작', stop: '■ 송신 중지', idle: '대기 중', tx: '송신 중',
+    major: '주요 도시', all: '전체 시간대', device: '이 기기',
+    warn: '⚠ 고음이 크게 나므로 이어폰을 귀에 꽂지 마세요. 블루투스 이어폰은 안 됩니다.',
+    how: '사용법',
+    steps: `<li>유선 이어폰을 연결하고 볼륨을 최대로.</li>
+      <li>시계를 이어폰 케이블 바로 옆(수 cm)에 둔다. 케이블을 시계에 몇 바퀴 감으면 잘 잡힌다.</li>
+      <li>송신 시작 후 시계를 <b>강제 수신</b> 모드로 (방법은 시계 설명서 참고). 수신에 2~10분.</li>
+      <li>송신 중엔 화면을 켜둔다. 안 잡히면 주파수를 바꿔 본다.</li>`,
+    about: '시계는 받은 시각을 무조건 일본 시각(JST)으로 여깁니다. 그래서 고른 곳의 현지 시각을 JST 자리에 넣어 보내면, 시계의 시차 설정 없이 현지 시각으로 맞춰집니다. 기본값은 이 기기의 시간대.',
+  },
+  en: {
+    sub: 'Set a radio-controlled watch through wired earphones · built for Citizen PMD',
+    mapLabel: 'World map. Tap to pick a time zone',
+    hint: 'Tap where you are going and the nearest city’s time zone is selected. Blue band = that zone (15° of longitude).',
+    list: 'Pick from the time zone list', freq: 'Frequency',
+    start: '▶ Start', stop: '■ Stop', idle: 'Idle', tx: 'Transmitting',
+    major: 'Major cities', all: 'All time zones', device: 'this device',
+    warn: '⚠ Loud high-pitched tone. Do not put the earphones in your ears. Bluetooth earphones will not work.',
+    how: 'How to use',
+    steps: `<li>Plug in wired earphones and turn the volume all the way up.</li>
+      <li>Place the watch right next to the earphone cable (a few cm). Wrapping the cable around the watch a few times helps.</li>
+      <li>Press Start, then put the watch into <b>manual (forced) reception</b> (see your watch manual). It takes 2–10 minutes.</li>
+      <li>Keep the screen on while transmitting. If it does not catch, try the other frequency.</li>`,
+    about: 'The watch always treats the received time as Japan time (JST). This page sends the selected place’s local time in its place, so the watch shows local time without touching its own time-zone setting. Defaults to this device’s time zone.',
+  },
+  ja: {
+    sub: '有線イヤホンで電波時計を合わせる · シチズン PMD 基準',
+    mapLabel: '世界地図。タップしてタイムゾーンを選択',
+    hint: '行き先をタップすると、最寄りの都市のタイムゾーンが選ばれます。青い帯 = そのタイムゾーン(経度15°単位)。',
+    list: 'タイムゾーン一覧から選ぶ', freq: '周波数',
+    start: '▶ 送信開始', stop: '■ 送信停止', idle: '待機中', tx: '送信中',
+    major: '主要都市', all: 'すべてのタイムゾーン', device: 'この端末',
+    warn: '⚠ 大きな高音が出るので、イヤホンを耳に入れないでください。Bluetoothイヤホンでは動作しません。',
+    how: '使い方',
+    steps: `<li>有線イヤホンを接続し、音量を最大にする。</li>
+      <li>時計をイヤホンケーブルのすぐ近く(数cm)に置く。ケーブルを時計に数回巻くと受信しやすい。</li>
+      <li>送信開始後、時計を<b>強制受信</b>にする(方法は時計の取扱説明書を参照)。受信には2〜10分かかります。</li>
+      <li>送信中は画面をつけたままにする。受信できない場合は周波数を切り替えてみる。</li>`,
+    about: '時計は受信した時刻を常に日本時間(JST)として扱います。そこで選んだ場所の現地時刻をJSTの代わりに送信するので、時計の時差設定なしで現地時刻に合います。初期値はこの端末のタイムゾーン。',
+  },
+};
+const LANGS = Object.keys(STR);
+const lang = [new URLSearchParams(location.search).get('lang'), ...navigator.languages.map(l => l.slice(0, 2))]
+  .find(l => LANGS.includes(l)) || 'en';
+const T = STR[lang];
+document.documentElement.lang = lang;
+for (const e of document.querySelectorAll('[data-t]')) e.innerHTML = T[e.dataset.t];
+for (const e of document.querySelectorAll('[data-aria]')) e.setAttribute('aria-label', T[e.dataset.aria]);
+document.querySelector(`.langs [hreflang=${lang}]`).setAttribute('aria-current', 'page');
+
+// --- cities ---
+// [IANA zone, lat, lon, ko, en, ja], west to east
 const CITIES = [
-  ['Pacific/Pago_Pago', -14.28, -170.7, '아메리칸사모아'],
-  ['Pacific/Honolulu', 21.31, -157.86, '호놀룰루'],
-  ['America/Anchorage', 61.22, -149.9, '앵커리지'],
-  ['America/Vancouver', 49.28, -123.12, '밴쿠버'],
-  ['America/Los_Angeles', 34.05, -118.24, '로스앤젤레스'],
-  ['America/Phoenix', 33.45, -112.07, '피닉스'],
-  ['America/Denver', 39.74, -104.99, '덴버'],
-  ['America/Mexico_City', 19.43, -99.13, '멕시코시티'],
-  ['America/Chicago', 41.88, -87.63, '시카고'],
-  ['America/Cancun', 21.16, -86.85, '칸쿤'],
-  ['America/Toronto', 43.65, -79.38, '토론토'],
-  ['America/Lima', -12.05, -77.04, '리마'],
-  ['America/New_York', 40.71, -74.01, '뉴욕'],
-  ['America/Bogota', 4.71, -74.07, '보고타'],
-  ['America/Santiago', -33.45, -70.67, '산티아고'],
-  ['America/Halifax', 44.65, -63.57, '핼리팩스'],
-  ['America/Argentina/Buenos_Aires', -34.6, -58.38, '부에노스아이레스'],
-  ['America/Sao_Paulo', -23.55, -46.63, '상파울루'],
-  ['Atlantic/Reykjavik', 64.15, -21.94, '레이캬비크'],
-  ['Europe/Lisbon', 38.72, -9.14, '리스본'],
-  ['Europe/London', 51.51, -0.13, '런던'],
-  ['Europe/Madrid', 40.42, -3.7, '마드리드'],
-  ['Europe/Paris', 48.86, 2.35, '파리'],
-  ['Africa/Lagos', 6.52, 3.38, '라고스'],
-  ['Europe/Rome', 41.9, 12.5, '로마'],
-  ['Europe/Berlin', 52.52, 13.4, '베를린'],
-  ['Europe/Athens', 37.98, 23.73, '아테네'],
-  ['Europe/Helsinki', 60.17, 24.94, '헬싱키'],
-  ['Africa/Johannesburg', -26.2, 28.05, '요하네스버그'],
-  ['Europe/Istanbul', 41.01, 28.98, '이스탄불'],
-  ['Africa/Cairo', 30.04, 31.24, '카이로'],
-  ['Africa/Nairobi', -1.29, 36.82, '나이로비'],
-  ['Europe/Moscow', 55.76, 37.62, '모스크바'],
-  ['Asia/Tehran', 35.69, 51.39, '테헤란'],
-  ['Asia/Dubai', 25.2, 55.27, '두바이'],
-  ['Asia/Karachi', 24.86, 67.01, '카라치'],
-  ['Asia/Almaty', 43.24, 76.89, '알마티'],
-  ['Asia/Kolkata', 28.61, 77.21, '델리'],
-  ['Asia/Kathmandu', 27.72, 85.32, '카트만두'],
-  ['Asia/Dhaka', 23.81, 90.41, '다카'],
-  ['Asia/Bangkok', 13.76, 100.5, '방콕'],
-  ['Asia/Singapore', 1.35, 103.82, '싱가포르'],
-  ['Asia/Ho_Chi_Minh', 10.82, 106.63, '호찌민'],
-  ['Asia/Jakarta', -6.21, 106.85, '자카르타'],
-  ['Asia/Ulaanbaatar', 47.89, 106.91, '울란바토르'],
-  ['Asia/Hong_Kong', 22.32, 114.17, '홍콩'],
-  ['Asia/Makassar', -8.65, 115.22, '발리'],
-  ['Australia/Perth', -31.95, 115.86, '퍼스'],
-  ['Asia/Shanghai', 39.9, 116.4, '베이징'],
-  ['Asia/Manila', 14.6, 120.98, '마닐라'],
-  ['Asia/Taipei', 25.03, 121.57, '타이베이'],
-  ['Asia/Seoul', 37.57, 126.98, '서울'],
-  ['Australia/Darwin', -12.46, 130.84, '다윈'],
-  ['Asia/Vladivostok', 43.12, 131.89, '블라디보스토크'],
-  ['Australia/Adelaide', -34.93, 138.6, '애들레이드'],
-  ['Asia/Tokyo', 35.68, 139.69, '도쿄'],
-  ['Pacific/Guam', 13.44, 144.79, '괌'],
-  ['Pacific/Saipan', 15.18, 145.75, '사이판'],
-  ['Australia/Sydney', -33.87, 151.21, '시드니'],
-  ['Australia/Brisbane', -27.47, 153.03, '브리즈번'],
-  ['Pacific/Auckland', -36.85, 174.76, '오클랜드'],
-  ['Pacific/Fiji', -18.14, 178.44, '피지'],
+  ['Pacific/Pago_Pago', -14.28, -170.7, '아메리칸사모아', 'Pago Pago', 'パゴパゴ'],
+  ['Pacific/Honolulu', 21.31, -157.86, '호놀룰루', 'Honolulu', 'ホノルル'],
+  ['America/Anchorage', 61.22, -149.9, '앵커리지', 'Anchorage', 'アンカレッジ'],
+  ['America/Vancouver', 49.28, -123.12, '밴쿠버', 'Vancouver', 'バンクーバー'],
+  ['America/Los_Angeles', 34.05, -118.24, '로스앤젤레스', 'Los Angeles', 'ロサンゼルス'],
+  ['America/Phoenix', 33.45, -112.07, '피닉스', 'Phoenix', 'フェニックス'],
+  ['America/Denver', 39.74, -104.99, '덴버', 'Denver', 'デンバー'],
+  ['America/Mexico_City', 19.43, -99.13, '멕시코시티', 'Mexico City', 'メキシコシティ'],
+  ['America/Chicago', 41.88, -87.63, '시카고', 'Chicago', 'シカゴ'],
+  ['America/Cancun', 21.16, -86.85, '칸쿤', 'Cancún', 'カンクン'],
+  ['America/Toronto', 43.65, -79.38, '토론토', 'Toronto', 'トロント'],
+  ['America/Lima', -12.05, -77.04, '리마', 'Lima', 'リマ'],
+  ['America/New_York', 40.71, -74.01, '뉴욕', 'New York', 'ニューヨーク'],
+  ['America/Bogota', 4.71, -74.07, '보고타', 'Bogotá', 'ボゴタ'],
+  ['America/Santiago', -33.45, -70.67, '산티아고', 'Santiago', 'サンティアゴ'],
+  ['America/Halifax', 44.65, -63.57, '핼리팩스', 'Halifax', 'ハリファックス'],
+  ['America/Argentina/Buenos_Aires', -34.6, -58.38, '부에노스아이레스', 'Buenos Aires', 'ブエノスアイレス'],
+  ['America/Sao_Paulo', -23.55, -46.63, '상파울루', 'São Paulo', 'サンパウロ'],
+  ['Atlantic/Reykjavik', 64.15, -21.94, '레이캬비크', 'Reykjavík', 'レイキャビク'],
+  ['Europe/Lisbon', 38.72, -9.14, '리스본', 'Lisbon', 'リスボン'],
+  ['Europe/London', 51.51, -0.13, '런던', 'London', 'ロンドン'],
+  ['Europe/Madrid', 40.42, -3.7, '마드리드', 'Madrid', 'マドリード'],
+  ['Europe/Paris', 48.86, 2.35, '파리', 'Paris', 'パリ'],
+  ['Africa/Lagos', 6.52, 3.38, '라고스', 'Lagos', 'ラゴス'],
+  ['Europe/Rome', 41.9, 12.5, '로마', 'Rome', 'ローマ'],
+  ['Europe/Berlin', 52.52, 13.4, '베를린', 'Berlin', 'ベルリン'],
+  ['Europe/Athens', 37.98, 23.73, '아테네', 'Athens', 'アテネ'],
+  ['Europe/Helsinki', 60.17, 24.94, '헬싱키', 'Helsinki', 'ヘルシンキ'],
+  ['Africa/Johannesburg', -26.2, 28.05, '요하네스버그', 'Johannesburg', 'ヨハネスブルグ'],
+  ['Europe/Istanbul', 41.01, 28.98, '이스탄불', 'Istanbul', 'イスタンブール'],
+  ['Africa/Cairo', 30.04, 31.24, '카이로', 'Cairo', 'カイロ'],
+  ['Africa/Nairobi', -1.29, 36.82, '나이로비', 'Nairobi', 'ナイロビ'],
+  ['Europe/Moscow', 55.76, 37.62, '모스크바', 'Moscow', 'モスクワ'],
+  ['Asia/Tehran', 35.69, 51.39, '테헤란', 'Tehran', 'テヘラン'],
+  ['Asia/Dubai', 25.2, 55.27, '두바이', 'Dubai', 'ドバイ'],
+  ['Asia/Karachi', 24.86, 67.01, '카라치', 'Karachi', 'カラチ'],
+  ['Asia/Almaty', 43.24, 76.89, '알마티', 'Almaty', 'アルマトイ'],
+  ['Asia/Kolkata', 28.61, 77.21, '델리', 'Delhi', 'デリー'],
+  ['Asia/Kathmandu', 27.72, 85.32, '카트만두', 'Kathmandu', 'カトマンズ'],
+  ['Asia/Dhaka', 23.81, 90.41, '다카', 'Dhaka', 'ダッカ'],
+  ['Asia/Bangkok', 13.76, 100.5, '방콕', 'Bangkok', 'バンコク'],
+  ['Asia/Singapore', 1.35, 103.82, '싱가포르', 'Singapore', 'シンガポール'],
+  ['Asia/Ho_Chi_Minh', 10.82, 106.63, '호찌민', 'Ho Chi Minh City', 'ホーチミン'],
+  ['Asia/Jakarta', -6.21, 106.85, '자카르타', 'Jakarta', 'ジャカルタ'],
+  ['Asia/Ulaanbaatar', 47.89, 106.91, '울란바토르', 'Ulaanbaatar', 'ウランバートル'],
+  ['Asia/Hong_Kong', 22.32, 114.17, '홍콩', 'Hong Kong', '香港'],
+  ['Asia/Makassar', -8.65, 115.22, '발리', 'Bali', 'バリ'],
+  ['Australia/Perth', -31.95, 115.86, '퍼스', 'Perth', 'パース'],
+  ['Asia/Shanghai', 39.9, 116.4, '베이징', 'Beijing', '北京'],
+  ['Asia/Manila', 14.6, 120.98, '마닐라', 'Manila', 'マニラ'],
+  ['Asia/Taipei', 25.03, 121.57, '타이베이', 'Taipei', '台北'],
+  ['Asia/Seoul', 37.57, 126.98, '서울', 'Seoul', 'ソウル'],
+  ['Australia/Darwin', -12.46, 130.84, '다윈', 'Darwin', 'ダーウィン'],
+  ['Asia/Vladivostok', 43.12, 131.89, '블라디보스토크', 'Vladivostok', 'ウラジオストク'],
+  ['Australia/Adelaide', -34.93, 138.6, '애들레이드', 'Adelaide', 'アデレード'],
+  ['Asia/Tokyo', 35.68, 139.69, '도쿄', 'Tokyo', '東京'],
+  ['Pacific/Guam', 13.44, 144.79, '괌', 'Guam', 'グアム'],
+  ['Pacific/Saipan', 15.18, 145.75, '사이판', 'Saipan', 'サイパン'],
+  ['Australia/Sydney', -33.87, 151.21, '시드니', 'Sydney', 'シドニー'],
+  ['Australia/Brisbane', -27.47, 153.03, '브리즈번', 'Brisbane', 'ブリスベン'],
+  ['Pacific/Auckland', -36.85, 174.76, '오클랜드', 'Auckland', 'オークランド'],
+  ['Pacific/Fiji', -18.14, 178.44, '피지', 'Fiji', 'フィジー'],
 ];
+const NAME = 3 + LANGS.indexOf(lang);
 const city = z => CITIES.find(c => c[0] === z);
-const nameOf = z => city(z)?.[3] ?? z.split('/').pop().replace(/_/g, ' ');
+const nameOf = z => city(z)?.[NAME] ?? z.split('/').pop().replace(/_/g, ' ');
 const device = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 // --- zone list ---
 for (const [label, zones] of [
-  ['주요 도시', new Set([device, ...CITIES.map(c => c[0])])],
-  ['전체 시간대', Intl.supportedValuesOf('timeZone')],
+  [T.major, new Set([device, ...CITIES.map(c => c[0])])],
+  [T.all, Intl.supportedValuesOf('timeZone')],
 ]) {
   const g = document.createElement('optgroup');
   g.label = label;
-  for (const z of zones) g.append(new Option(`${nameOf(z)}${z === device ? ' · 이 기기' : ''} (${z})`, z));
+  for (const z of zones) g.append(new Option(`${nameOf(z)}${z === device ? ` · ${T.device}` : ''} (${z})`, z));
   $('tz').append(g);
 }
 $('tz').value = device;
 
 // --- map ---
+const W = 1000, H = 500, NS = 'http://www.w3.org/2000/svg';
+const X = lon => (lon + 180) / 360 * W, Y = lat => (90 - lat) / 180 * H;
 const el = (tag, attrs, parent) => {
   const e = document.createElementNS(NS, tag);
   for (const k in attrs) e.setAttribute(k, attrs[k]);
@@ -212,9 +272,9 @@ for (let k = -12; k <= 12; k++) {
   if (k < 12) el('line', { x1: X(k * 15 + 7.5), x2: X(k * 15 + 7.5), y1: 0, y2: H }, $('grid'));
   el('text', { x: X(k * 15), y: 36 }, $('grid')).textContent = (k > 0 ? '+' : '') + k;
 }
-for (const [z, lat, lon, name] of CITIES)
-  el('circle', { cx: X(lon), cy: Y(lat), r: 4, 'data-zone': z }, $('dots'))
-    .appendChild(document.createElementNS(NS, 'title')).textContent = name;
+for (const c of CITIES)
+  el('circle', { cx: X(c[2]), cy: Y(c[1]), r: 4, 'data-zone': c[0] }, $('dots'))
+    .appendChild(document.createElementNS(NS, 'title')).textContent = c[NAME];
 
 Promise.all([
   import('https://cdn.jsdelivr.net/npm/d3-geo@3.1.1/+esm'),
@@ -244,7 +304,7 @@ function showZone(behavior = 'smooth') {
   const tz = $('tz').value, off = offsetMin(new Date(), tz), c = city(tz);
   $('band').setAttribute('x', X(off / 4 - 7.5));
   for (const d of $('dots').children) d.classList.toggle('on', d.dataset.zone === tz);
-  $('pin').textContent = c ? c[3] : '';
+  $('pin').textContent = c ? c[NAME] : '';
   if (c) {
     const east = c[2] > 140;
     $('pin').setAttribute('x', X(c[2]) + (east ? -12 : 12));
@@ -270,9 +330,9 @@ async function start() {
   osc.connect(gain).connect(ctx.destination);
   osc.start();
   next = Math.ceil(Date.now() / 1000) * 1000;
-  $('go').textContent = '■ 송신 중지';
+  $('go').textContent = T.stop;
   $('go').classList.add('running');
-  $('state').textContent = `송신 중 · ${Math.round(freq() * 3 / 1000)}kHz`;
+  $('state').textContent = `${T.tx} · ${Math.round(freq() * 3 / 1000)}kHz`;
   wake = await navigator.wakeLock?.request('screen').catch(() => null);
 }
 
@@ -280,9 +340,9 @@ function stop() {
   ctx.close();
   wake?.release();
   ctx = wake = null;
-  $('go').textContent = '▶ 송신 시작';
+  $('go').textContent = T.start;
   $('go').classList.remove('running');
-  $('state').textContent = '대기 중';
+  $('state').textContent = T.idle;
 }
 
 // Queue each second's pulse ~3 s ahead on the audio clock.
@@ -311,7 +371,7 @@ function render() {
   lastSec = s;
   const p = n => String(n).padStart(2, '0');
   $('time').textContent = `${p(f.h)}:${p(f.m)}:${p(s)}`;
-  $('date').textContent = now.toLocaleDateString('ko-KR', { timeZone: tz, year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+  $('date').textContent = now.toLocaleDateString(lang, { timeZone: tz, year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
   $('bits').innerHTML = bits.map((b, i) =>
     `<i class="${b === 'M' ? 'm' : ''}${i === s && ctx ? ' cur' : ''}" style="height:${HIGH[b] * 100}%"></i>`).join('');
 }
