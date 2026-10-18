@@ -1,5 +1,6 @@
 // node test.mjs
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { fields, frame } from './jjy.js';
 
 const t = new Date('2026-10-18T04:07:00Z');
@@ -15,5 +16,9 @@ assert.deepEqual(fields(t, 'America/New_York'), { y: 2026, doy: 291, h: 0, m: 7,
 
 // Leap year Dec 31 -> day 366.
 assert.equal(fields(new Date('2028-12-31T12:00:00Z'), 'UTC').doy, 366);
+
+// The three language pages must keep the same element ids that app.js uses.
+const ids = f => [...readFileSync(new URL(f, import.meta.url), 'utf8').matchAll(/id="([^"]+)"/g)].map(m => m[1]).join();
+for (const f of ['ko/index.html', 'ja/index.html']) assert.equal(ids(f), ids('index.html'), f);
 
 console.log('ok');

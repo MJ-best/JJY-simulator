@@ -3,80 +3,47 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>JJY Simulator</title>
-<meta name="description" content="Set a JJY radio-controlled watch through wired earphones, in any time zone. 유선 이어폰으로 전파시계 맞추기. 有線イヤホンで電波時計を合わせる。">
-<style>
-  :root {
-    color-scheme: light dark;
-    --bg: #f4f5f7; --card: #fff; --fg: #1b1d21; --muted: #6b7280; --line: #e3e5e8;
-    --accent: #2563eb; --accent-fg: #fff; --sea: #dbe7f3; --land: #b9c7b0; --band: #2563eb33; --grid: #ffffffaa;
-    --on: #f59e0b; --stop: #dc2626;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0f1115; --card: #1a1d23; --fg: #e8eaed; --muted: #9aa0a6; --line: #2a2e35;
-      --accent: #60a5fa; --accent-fg: #0b1220; --sea: #13233a; --land: #3b4a3a; --band: #60a5fa40; --grid: #ffffff22;
-    }
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; }
-  main { max-width: 44rem; margin: 0 auto; padding: 1rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
-  header { display: grid; grid-template-columns: 1fr auto; align-items: center; }
-  h1 { margin: .5rem 0 0; font-size: 1.5rem; }
-  header p { grid-column: 1 / -1; margin: 0; color: var(--muted); }
-  .langs { display: flex; gap: .75rem; font-size: .9rem; }
-  .langs a { color: var(--muted); text-decoration: none; }
-  .langs a[aria-current] { color: var(--fg); font-weight: 700; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 1rem; }
-  .hint { color: var(--muted); font-size: .85rem; margin: .5rem 0 0; }
-
-  .map { overflow-x: auto; border-radius: 12px; -webkit-overflow-scrolling: touch; }
-  .map svg { display: block; width: 100%; min-width: 720px; cursor: crosshair; }
-  .sea { fill: var(--sea); } .land { fill: var(--land); } .band { fill: var(--band); }
-  .grid line { stroke: var(--grid); }
-  .grid text { fill: var(--muted); font-size: 13px; text-anchor: middle; }
-  .dots circle { fill: var(--fg); opacity: .55; }
-  .dots circle.on { fill: var(--accent); opacity: 1; r: 7; }
-  #pin { fill: var(--fg); font-size: 18px; font-weight: 700; paint-order: stroke; stroke: var(--card); stroke-width: 4px; pointer-events: none; }
-
-  .now { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: .25rem 1rem; }
-  #city { font-size: 1.25rem; font-weight: 700; }
-  #utc { color: var(--muted); }
-  #time { font-size: 3rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
-  #date { color: var(--muted); }
-  select { font: inherit; width: 100%; padding: .6rem; margin-top: .75rem; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
-
-  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
-  .seg label { border: 1px solid var(--line); border-radius: 10px; padding: .6rem; text-align: center; cursor: pointer; }
-  .seg input { position: absolute; opacity: 0; }
-  .seg label:has(:checked) { border-color: var(--accent); background: var(--band); font-weight: 700; }
-  .seg label:has(:focus-visible) { outline: 2px solid var(--accent); }
-  #go { width: 100%; margin-top: .75rem; padding: 1rem; font: 700 1.25rem system-ui, sans-serif; border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-fg); cursor: pointer; }
-  #go.running { background: var(--stop); color: #fff; }
-
-  .status { display: flex; align-items: center; gap: .5rem; margin-top: .75rem; color: var(--muted); }
-  #lamp { width: 14px; height: 14px; border-radius: 50%; background: var(--line); }
-  #lamp.on { background: var(--on); box-shadow: 0 0 10px var(--on); }
-  #bits { display: flex; align-items: flex-end; gap: 1px; height: 40px; margin-top: .75rem; }
-  #bits i { flex: 1; background: var(--muted); opacity: .45; border-radius: 1px; }
-  #bits i.m { background: var(--fg); opacity: .8; }
-  #bits i.cur { background: var(--on); opacity: 1; }
-
-  .warn { color: var(--stop); font-weight: 600; margin: 0; }
-  details summary { cursor: pointer; font-weight: 600; }
-</style>
+<title>JJY Simulator – Sync a Radio-Controlled Watch with Earphones, in Any Time Zone</title>
+<meta name="description" content="Free web app that imitates Japan's JJY time signal through wired earphones, so a JJY radio-controlled (atomic) watch such as Citizen, Seiko or Casio can sync anywhere, even abroad in local time. No app to install.">
+<link rel="canonical" href="https://mj-best.github.io/JJY-simulator/">
+<link rel="alternate" hreflang="en" href="https://mj-best.github.io/JJY-simulator/">
+<link rel="alternate" hreflang="ko" href="https://mj-best.github.io/JJY-simulator/ko/">
+<link rel="alternate" hreflang="ja" href="https://mj-best.github.io/JJY-simulator/ja/">
+<link rel="alternate" hreflang="x-default" href="https://mj-best.github.io/JJY-simulator/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mj-best.github.io/JJY-simulator/">
+<meta property="og:title" content="JJY Simulator – Sync a radio-controlled watch with earphones">
+<meta property="og:description" content="Imitates the JJY time signal through wired earphones. Pick a place on the map and your watch syncs to local time, anywhere.">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"JJY Simulator","url":"https://mj-best.github.io/JJY-simulator/","inLanguage":"en",
+ "description":"Imitates Japan's JJY time signal through wired earphones so a radio-controlled watch can sync anywhere, in local time.",
+ "applicationCategory":"UtilitiesApplication","operatingSystem":"Any","browserRequirements":"Web Audio API",
+ "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<script>
+  // Send first-time ko/ja visitors to their language; ?lang=en or a past visit to English keeps them here.
+  try {
+    const l = new URLSearchParams(location.search).get('lang') || localStorage.lang || navigator.language.slice(0, 2);
+    if (l === 'ko' || l === 'ja') location.replace(l + '/');
+  } catch {}
+</script>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <main>
   <header>
     <h1>JJY Simulator</h1>
-    <nav class="langs"><a href="?lang=ko" hreflang="ko">한국어</a><a href="?lang=en" hreflang="en">English</a><a href="?lang=ja" hreflang="ja">日本語</a></nav>
-    <p data-t="sub"></p>
+    <nav class="langs"><a href="ko/" hreflang="ko">한국어</a><a href="./?lang=en" hreflang="en" aria-current="page">English</a><a href="ja/" hreflang="ja">日本語</a></nav>
+    <p>Sync a radio-controlled watch through wired earphones · built for Citizen PMD</p>
   </header>
 
   <section class="card">
     <div class="map" id="map">
-      <svg id="svg" viewBox="0 20 1000 390" role="img" data-aria="mapLabel">
+      <svg id="svg" viewBox="0 20 1000 390" role="img" aria-label="World map. Tap to pick a time zone">
         <rect class="sea" width="1000" height="500"/>
         <rect class="band" id="band" y="0" height="500" width="41.67"/>
         <path class="land" id="land"/>
@@ -85,305 +52,47 @@
         <text id="pin"></text>
       </svg>
     </div>
-    <p class="hint" data-t="hint"></p>
+    <p class="hint">Tap where you are going and the nearest city’s time zone is selected. Blue band = that zone (15° of longitude).</p>
   </section>
 
   <section class="card">
     <div class="now"><span id="city"></span><span id="utc"></span></div>
     <div id="time"></div>
     <div id="date"></div>
-    <select id="tz" data-aria="list"></select>
+    <select id="tz" aria-label="Pick from the time zone list"></select>
   </section>
 
   <section class="card">
-    <div class="seg" role="radiogroup" data-aria="freq">
+    <div class="seg" role="radiogroup" aria-label="Frequency">
       <label><input type="radio" name="freq" value="13333.333" checked> 40kHz</label>
       <label><input type="radio" name="freq" value="20000"> 60kHz</label>
     </div>
-    <button id="go" data-t="start"></button>
-    <div class="status"><span id="lamp"></span><span id="state" data-t="idle"></span></div>
+    <button id="go">▶ Start</button>
+    <div class="status"><span id="lamp"></span><span id="state">Idle</span></div>
     <div id="bits" aria-hidden="true"></div>
   </section>
 
   <section class="card">
-    <p class="warn" data-t="warn"></p>
-    <details>
-      <summary data-t="how"></summary>
-      <ol data-t="steps"></ol>
-      <p data-t="about"></p>
-    </details>
-  </section>
-</main>
-
-<script type="module">
-import { fields, frame, HIGH } from './jjy.js';
-
-const $ = id => document.getElementById(id);
-
-// --- language ---
-const STR = {
-  ko: {
-    sub: '유선 이어폰으로 전파시계 맞추기 · 시티즌 PMD 기준',
-    mapLabel: '세계 지도. 눌러서 시간대 선택',
-    hint: '지도에서 가고 싶은 곳을 누르면 가장 가까운 도시의 시간대가 선택됩니다. 파란 띠 = 그 시간대(경도 15° 단위).',
-    list: '시간대 목록에서 고르기', freq: '주파수',
-    start: '▶ 송신 시작', stop: '■ 송신 중지', idle: '대기 중', tx: '송신 중',
-    major: '주요 도시', all: '전체 시간대', device: '이 기기',
-    warn: '⚠ 고음이 크게 나므로 이어폰을 귀에 꽂지 마세요. 블루투스 이어폰은 안 됩니다.',
-    how: '사용법',
-    steps: `<li>유선 이어폰을 연결하고 볼륨을 최대로.</li>
-      <li>시계를 이어폰 케이블 바로 옆(수 cm)에 둔다. 케이블을 시계에 몇 바퀴 감으면 잘 잡힌다.</li>
-      <li>송신 시작 후 시계를 <b>강제 수신</b> 모드로 (방법은 시계 설명서 참고). 수신에 2~10분.</li>
-      <li>송신 중엔 화면을 켜둔다. 안 잡히면 주파수를 바꿔 본다.</li>`,
-    about: '시계는 받은 시각을 무조건 일본 시각(JST)으로 여깁니다. 그래서 고른 곳의 현지 시각을 JST 자리에 넣어 보내면, 시계의 시차 설정 없이 현지 시각으로 맞춰집니다. 기본값은 이 기기의 시간대.',
-  },
-  en: {
-    sub: 'Set a radio-controlled watch through wired earphones · built for Citizen PMD',
-    mapLabel: 'World map. Tap to pick a time zone',
-    hint: 'Tap where you are going and the nearest city’s time zone is selected. Blue band = that zone (15° of longitude).',
-    list: 'Pick from the time zone list', freq: 'Frequency',
-    start: '▶ Start', stop: '■ Stop', idle: 'Idle', tx: 'Transmitting',
-    major: 'Major cities', all: 'All time zones', device: 'this device',
-    warn: '⚠ Loud high-pitched tone. Do not put the earphones in your ears. Bluetooth earphones will not work.',
-    how: 'How to use',
-    steps: `<li>Plug in wired earphones and turn the volume all the way up.</li>
+    <p class="warn">⚠ Loud high-pitched tone. Do not put the earphones in your ears. Bluetooth earphones will not work.</p>
+    <h2>How to use</h2>
+    <ol>
+      <li>Plug in wired earphones and turn the volume all the way up.</li>
       <li>Place the watch right next to the earphone cable (a few cm). Wrapping the cable around the watch a few times helps.</li>
       <li>Press Start, then put the watch into <b>manual (forced) reception</b> (see your watch manual). It takes 2–10 minutes.</li>
-      <li>Keep the screen on while transmitting. If it does not catch, try the other frequency.</li>`,
-    about: 'The watch always treats the received time as Japan time (JST). This page sends the selected place’s local time in its place, so the watch shows local time without touching its own time-zone setting. Defaults to this device’s time zone.',
-  },
-  ja: {
-    sub: '有線イヤホンで電波時計を合わせる · シチズン PMD 基準',
-    mapLabel: '世界地図。タップしてタイムゾーンを選択',
-    hint: '行き先をタップすると、最寄りの都市のタイムゾーンが選ばれます。青い帯 = そのタイムゾーン(経度15°単位)。',
-    list: 'タイムゾーン一覧から選ぶ', freq: '周波数',
-    start: '▶ 送信開始', stop: '■ 送信停止', idle: '待機中', tx: '送信中',
-    major: '主要都市', all: 'すべてのタイムゾーン', device: 'この端末',
-    warn: '⚠ 大きな高音が出るので、イヤホンを耳に入れないでください。Bluetoothイヤホンでは動作しません。',
-    how: '使い方',
-    steps: `<li>有線イヤホンを接続し、音量を最大にする。</li>
-      <li>時計をイヤホンケーブルのすぐ近く(数cm)に置く。ケーブルを時計に数回巻くと受信しやすい。</li>
-      <li>送信開始後、時計を<b>強制受信</b>にする(方法は時計の取扱説明書を参照)。受信には2〜10分かかります。</li>
-      <li>送信中は画面をつけたままにする。受信できない場合は周波数を切り替えてみる。</li>`,
-    about: '時計は受信した時刻を常に日本時間(JST)として扱います。そこで選んだ場所の現地時刻をJSTの代わりに送信するので、時計の時差設定なしで現地時刻に合います。初期値はこの端末のタイムゾーン。',
-  },
-};
-const LANGS = Object.keys(STR);
-const lang = [new URLSearchParams(location.search).get('lang'), ...navigator.languages.map(l => l.slice(0, 2))]
-  .find(l => LANGS.includes(l)) || 'en';
-const T = STR[lang];
-document.documentElement.lang = lang;
-for (const e of document.querySelectorAll('[data-t]')) e.innerHTML = T[e.dataset.t];
-for (const e of document.querySelectorAll('[data-aria]')) e.setAttribute('aria-label', T[e.dataset.aria]);
-document.querySelector(`.langs [hreflang=${lang}]`).setAttribute('aria-current', 'page');
+      <li>Keep the screen on while transmitting. If it does not catch, try the other frequency.</li>
+    </ol>
+  </section>
 
-// --- cities ---
-// [IANA zone, lat, lon, ko, en, ja], west to east
-const CITIES = [
-  ['Pacific/Pago_Pago', -14.28, -170.7, '아메리칸사모아', 'Pago Pago', 'パゴパゴ'],
-  ['Pacific/Honolulu', 21.31, -157.86, '호놀룰루', 'Honolulu', 'ホノルル'],
-  ['America/Anchorage', 61.22, -149.9, '앵커리지', 'Anchorage', 'アンカレッジ'],
-  ['America/Vancouver', 49.28, -123.12, '밴쿠버', 'Vancouver', 'バンクーバー'],
-  ['America/Los_Angeles', 34.05, -118.24, '로스앤젤레스', 'Los Angeles', 'ロサンゼルス'],
-  ['America/Phoenix', 33.45, -112.07, '피닉스', 'Phoenix', 'フェニックス'],
-  ['America/Denver', 39.74, -104.99, '덴버', 'Denver', 'デンバー'],
-  ['America/Mexico_City', 19.43, -99.13, '멕시코시티', 'Mexico City', 'メキシコシティ'],
-  ['America/Chicago', 41.88, -87.63, '시카고', 'Chicago', 'シカゴ'],
-  ['America/Cancun', 21.16, -86.85, '칸쿤', 'Cancún', 'カンクン'],
-  ['America/Toronto', 43.65, -79.38, '토론토', 'Toronto', 'トロント'],
-  ['America/Lima', -12.05, -77.04, '리마', 'Lima', 'リマ'],
-  ['America/New_York', 40.71, -74.01, '뉴욕', 'New York', 'ニューヨーク'],
-  ['America/Bogota', 4.71, -74.07, '보고타', 'Bogotá', 'ボゴタ'],
-  ['America/Santiago', -33.45, -70.67, '산티아고', 'Santiago', 'サンティアゴ'],
-  ['America/Halifax', 44.65, -63.57, '핼리팩스', 'Halifax', 'ハリファックス'],
-  ['America/Argentina/Buenos_Aires', -34.6, -58.38, '부에노스아이레스', 'Buenos Aires', 'ブエノスアイレス'],
-  ['America/Sao_Paulo', -23.55, -46.63, '상파울루', 'São Paulo', 'サンパウロ'],
-  ['Atlantic/Reykjavik', 64.15, -21.94, '레이캬비크', 'Reykjavík', 'レイキャビク'],
-  ['Europe/Lisbon', 38.72, -9.14, '리스본', 'Lisbon', 'リスボン'],
-  ['Europe/London', 51.51, -0.13, '런던', 'London', 'ロンドン'],
-  ['Europe/Madrid', 40.42, -3.7, '마드리드', 'Madrid', 'マドリード'],
-  ['Europe/Paris', 48.86, 2.35, '파리', 'Paris', 'パリ'],
-  ['Africa/Lagos', 6.52, 3.38, '라고스', 'Lagos', 'ラゴス'],
-  ['Europe/Rome', 41.9, 12.5, '로마', 'Rome', 'ローマ'],
-  ['Europe/Berlin', 52.52, 13.4, '베를린', 'Berlin', 'ベルリン'],
-  ['Europe/Athens', 37.98, 23.73, '아테네', 'Athens', 'アテネ'],
-  ['Europe/Helsinki', 60.17, 24.94, '헬싱키', 'Helsinki', 'ヘルシンキ'],
-  ['Africa/Johannesburg', -26.2, 28.05, '요하네스버그', 'Johannesburg', 'ヨハネスブルグ'],
-  ['Europe/Istanbul', 41.01, 28.98, '이스탄불', 'Istanbul', 'イスタンブール'],
-  ['Africa/Cairo', 30.04, 31.24, '카이로', 'Cairo', 'カイロ'],
-  ['Africa/Nairobi', -1.29, 36.82, '나이로비', 'Nairobi', 'ナイロビ'],
-  ['Europe/Moscow', 55.76, 37.62, '모스크바', 'Moscow', 'モスクワ'],
-  ['Asia/Tehran', 35.69, 51.39, '테헤란', 'Tehran', 'テヘラン'],
-  ['Asia/Dubai', 25.2, 55.27, '두바이', 'Dubai', 'ドバイ'],
-  ['Asia/Karachi', 24.86, 67.01, '카라치', 'Karachi', 'カラチ'],
-  ['Asia/Almaty', 43.24, 76.89, '알마티', 'Almaty', 'アルマトイ'],
-  ['Asia/Kolkata', 28.61, 77.21, '델리', 'Delhi', 'デリー'],
-  ['Asia/Kathmandu', 27.72, 85.32, '카트만두', 'Kathmandu', 'カトマンズ'],
-  ['Asia/Dhaka', 23.81, 90.41, '다카', 'Dhaka', 'ダッカ'],
-  ['Asia/Bangkok', 13.76, 100.5, '방콕', 'Bangkok', 'バンコク'],
-  ['Asia/Singapore', 1.35, 103.82, '싱가포르', 'Singapore', 'シンガポール'],
-  ['Asia/Ho_Chi_Minh', 10.82, 106.63, '호찌민', 'Ho Chi Minh City', 'ホーチミン'],
-  ['Asia/Jakarta', -6.21, 106.85, '자카르타', 'Jakarta', 'ジャカルタ'],
-  ['Asia/Ulaanbaatar', 47.89, 106.91, '울란바토르', 'Ulaanbaatar', 'ウランバートル'],
-  ['Asia/Hong_Kong', 22.32, 114.17, '홍콩', 'Hong Kong', '香港'],
-  ['Asia/Makassar', -8.65, 115.22, '발리', 'Bali', 'バリ'],
-  ['Australia/Perth', -31.95, 115.86, '퍼스', 'Perth', 'パース'],
-  ['Asia/Shanghai', 39.9, 116.4, '베이징', 'Beijing', '北京'],
-  ['Asia/Manila', 14.6, 120.98, '마닐라', 'Manila', 'マニラ'],
-  ['Asia/Taipei', 25.03, 121.57, '타이베이', 'Taipei', '台北'],
-  ['Asia/Seoul', 37.57, 126.98, '서울', 'Seoul', 'ソウル'],
-  ['Australia/Darwin', -12.46, 130.84, '다윈', 'Darwin', 'ダーウィン'],
-  ['Asia/Vladivostok', 43.12, 131.89, '블라디보스토크', 'Vladivostok', 'ウラジオストク'],
-  ['Australia/Adelaide', -34.93, 138.6, '애들레이드', 'Adelaide', 'アデレード'],
-  ['Asia/Tokyo', 35.68, 139.69, '도쿄', 'Tokyo', '東京'],
-  ['Pacific/Guam', 13.44, 144.79, '괌', 'Guam', 'グアム'],
-  ['Pacific/Saipan', 15.18, 145.75, '사이판', 'Saipan', 'サイパン'],
-  ['Australia/Sydney', -33.87, 151.21, '시드니', 'Sydney', 'シドニー'],
-  ['Australia/Brisbane', -27.47, 153.03, '브리즈번', 'Brisbane', 'ブリスベン'],
-  ['Pacific/Auckland', -36.85, 174.76, '오클랜드', 'Auckland', 'オークランド'],
-  ['Pacific/Fiji', -18.14, 178.44, '피지', 'Fiji', 'フィジー'],
-];
-const NAME = 3 + LANGS.indexOf(lang);
-const city = z => CITIES.find(c => c[0] === z);
-const nameOf = z => city(z)?.[NAME] ?? z.split('/').pop().replace(/_/g, ' ');
-const device = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-// --- zone list ---
-for (const [label, zones] of [
-  [T.major, new Set([device, ...CITIES.map(c => c[0])])],
-  [T.all, Intl.supportedValuesOf('timeZone')],
-]) {
-  const g = document.createElement('optgroup');
-  g.label = label;
-  for (const z of zones) g.append(new Option(`${nameOf(z)}${z === device ? ` · ${T.device}` : ''} (${z})`, z));
-  $('tz').append(g);
-}
-$('tz').value = device;
-
-// --- map ---
-const W = 1000, H = 500, NS = 'http://www.w3.org/2000/svg';
-const X = lon => (lon + 180) / 360 * W, Y = lat => (90 - lat) / 180 * H;
-const el = (tag, attrs, parent) => {
-  const e = document.createElementNS(NS, tag);
-  for (const k in attrs) e.setAttribute(k, attrs[k]);
-  return parent.appendChild(e);
-};
-for (let k = -12; k <= 12; k++) {
-  if (k < 12) el('line', { x1: X(k * 15 + 7.5), x2: X(k * 15 + 7.5), y1: 0, y2: H }, $('grid'));
-  el('text', { x: X(k * 15), y: 36 }, $('grid')).textContent = (k > 0 ? '+' : '') + k;
-}
-for (const c of CITIES)
-  el('circle', { cx: X(c[2]), cy: Y(c[1]), r: 4, 'data-zone': c[0] }, $('dots'))
-    .appendChild(document.createElementNS(NS, 'title')).textContent = c[NAME];
-
-Promise.all([
-  import('https://cdn.jsdelivr.net/npm/d3-geo@3.1.1/+esm'),
-  import('https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/+esm'),
-  fetch('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/land-110m.json').then(r => r.json()),
-]).then(([d3, topo, world]) => {
-  const proj = d3.geoEquirectangular().scale(W / 2 / Math.PI).translate([W / 2, H / 2]); // same as X/Y
-  $('land').setAttribute('d', d3.geoPath(proj)(topo.feature(world, world.objects.land)));
-}).catch(e => console.warn('map unavailable, list still works', e));
-
-$('svg').onclick = e => {
-  const p = new DOMPoint(e.clientX, e.clientY).matrixTransform($('svg').getScreenCTM().inverse());
-  const lon = p.x / W * 360 - 180, lat = 90 - p.y / H * 180, k = Math.cos(lat * Math.PI / 180);
-  const dist = c => (c[1] - lat) ** 2 + ((((c[2] - lon) % 360 + 540) % 360 - 180) * k) ** 2;
-  $('tz').value = CITIES.reduce((a, b) => (dist(b) < dist(a) ? b : a))[0];
-  $('tz').onchange();
-};
-
-const offsetMin = (d, tz) => {
-  const f = fields(d, tz);
-  return (Date.UTC(f.y, 0, f.doy, f.h, f.m) - Math.floor(d / 6e4) * 6e4) / 6e4;
-};
-const fmtOffset = m => `UTC${m < 0 ? '−' : '+'}${Math.trunc(Math.abs(m) / 60)}${m % 60 ? ':' + String(Math.abs(m % 60)).padStart(2, '0') : ''}`;
-
-let lastSec;
-function showZone(behavior = 'smooth') {
-  const tz = $('tz').value, off = offsetMin(new Date(), tz), c = city(tz);
-  $('band').setAttribute('x', X(off / 4 - 7.5));
-  for (const d of $('dots').children) d.classList.toggle('on', d.dataset.zone === tz);
-  $('pin').textContent = c ? c[NAME] : '';
-  if (c) {
-    const east = c[2] > 140;
-    $('pin').setAttribute('x', X(c[2]) + (east ? -12 : 12));
-    $('pin').setAttribute('y', Y(c[1]) + 6);
-    $('pin').setAttribute('text-anchor', east ? 'end' : 'start');
-  }
-  $('city').textContent = nameOf(tz);
-  $('utc').textContent = fmtOffset(off);
-  lastSec = null;
-  const px = X(c ? c[2] : off / 4) / W * $('svg').clientWidth;
-  $('map').scrollTo({ left: px - $('map').clientWidth / 2, behavior });
-}
-
-// --- audio ---
-let ctx, gain, wake, next;
-const freq = () => +document.querySelector('[name=freq]:checked').value;
-
-async function start() {
-  if (navigator.audioSession) navigator.audioSession.type = 'playback'; // iOS: ignore silent switch
-  ctx = new AudioContext();
-  const osc = new OscillatorNode(ctx, { frequency: freq() });
-  gain = new GainNode(ctx, { gain: 0 });
-  osc.connect(gain).connect(ctx.destination);
-  osc.start();
-  next = Math.ceil(Date.now() / 1000) * 1000;
-  $('go').textContent = T.stop;
-  $('go').classList.add('running');
-  $('state').textContent = `${T.tx} · ${Math.round(freq() * 3 / 1000)}kHz`;
-  wake = await navigator.wakeLock?.request('screen').catch(() => null);
-}
-
-function stop() {
-  ctx.close();
-  wake?.release();
-  ctx = wake = null;
-  $('go').textContent = T.start;
-  $('go').classList.remove('running');
-  $('state').textContent = T.idle;
-}
-
-// Queue each second's pulse ~3 s ahead on the audio clock.
-function schedule() {
-  const ts = ctx.getOutputTimestamp?.() ?? {};
-  // Output timestamp maps audio time to what is actually leaving the jack (includes latency).
-  const [ctxNow, wallNow] = ts.performanceTime
-    ? [ts.contextTime, performance.timeOrigin + ts.performanceTime]
-    : [ctx.currentTime, Date.now()];
-  for (; next < wallNow + 3000; next += 1000) {
-    const at = ctxNow + (next - wallNow) / 1000;
-    if (at < ctx.currentTime) continue;
-    const d = new Date(next);
-    const sym = frame(fields(d, $('tz').value))[d.getUTCSeconds()];
-    gain.gain.setValueAtTime(1, at);
-    gain.gain.setValueAtTime(0, at + HIGH[sym]);
-  }
-}
-
-// --- display ---
-function render() {
-  const now = new Date(), tz = $('tz').value, s = now.getUTCSeconds();
-  const f = fields(now, tz), bits = frame(f);
-  $('lamp').classList.toggle('on', !!ctx && now % 1000 < HIGH[bits[s]] * 1000);
-  if (s === lastSec) return;
-  lastSec = s;
-  const p = n => String(n).padStart(2, '0');
-  $('time').textContent = `${p(f.h)}:${p(f.m)}:${p(s)}`;
-  $('date').textContent = now.toLocaleDateString(lang, { timeZone: tz, year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
-  $('bits').innerHTML = bits.map((b, i) =>
-    `<i class="${b === 'M' ? 'm' : ''}${i === s && ctx ? ' cur' : ''}" style="height:${HIGH[b] * 100}%"></i>`).join('');
-}
-
-setInterval(() => { if (ctx) schedule(); render(); }, 50);
-showZone('instant');
-render();
-
-const restart = () => ctx && (stop(), start());
-$('go').onclick = () => (ctx ? stop() : start());
-$('tz').onchange = () => { showZone(); restart(); };
-for (const r of document.getElementsByName('freq')) r.onchange = restart;
-</script>
+  <section class="card">
+    <h2>How does it work?</h2>
+    <p>Phones cannot output 40 kHz directly, so the page plays a 13.333 kHz tone (20 kHz for the 60 kHz station) switched on and off in the JJY time-code pattern. The earphone cable leaks its third harmonic, 40 kHz or 60 kHz, the same frequencies JJY uses, and the watch antenna picks it up from a few centimeters away.</p>
+    <h2>Using a Japanese radio-controlled watch abroad</h2>
+    <p>JJY watches always read the signal as Japan time (JST). Pick a place on the map and the page sends that place’s local time instead, so the watch shows local time without changing any setting. Daylight saving time is applied automatically. Works in the US, Europe, Korea or anywhere JJY does not reach, and indoors in Japan where the real signal is weak.</p>
+    <h2>Which watches work?</h2>
+    <p>Watches that receive JJY (40/60 kHz), such as Citizen, Seiko and Casio models made for Japan. Built and tuned for the Citizen PMD series. Reception depends on the phone’s audio output and the earphone cable. It does not imitate WWVB, DCF77 or MSF.</p>
+  </section>
+</main>
+<script type="application/json" id="t">{"start":"▶ Start","stop":"■ Stop","idle":"Idle","tx":"Transmitting","major":"Major cities","all":"All time zones","device":"this device"}</script>
+<script type="module" src="app.js"></script>
 </body>
 </html>

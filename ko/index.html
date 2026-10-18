@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JJY 시뮬레이터 – 이어폰으로 전파시계 시간 맞추기 (해외 현지 시각 지원)</title>
+<meta name="description" content="유선 이어폰으로 일본 표준전파 JJY를 흉내 내 전파시계(시티즌·세이코·카시오)를 맞추는 무료 웹앱. 해외에서도 지도에서 고른 현지 시각으로 바로 수신, 시차 설정 불필요. 앱 설치 없음.">
+<link rel="canonical" href="https://mj-best.github.io/JJY-simulator/ko/">
+<link rel="alternate" hreflang="en" href="https://mj-best.github.io/JJY-simulator/">
+<link rel="alternate" hreflang="ko" href="https://mj-best.github.io/JJY-simulator/ko/">
+<link rel="alternate" hreflang="ja" href="https://mj-best.github.io/JJY-simulator/ja/">
+<link rel="alternate" hreflang="x-default" href="https://mj-best.github.io/JJY-simulator/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mj-best.github.io/JJY-simulator/ko/">
+<meta property="og:title" content="JJY 시뮬레이터 – 이어폰으로 전파시계 맞추기">
+<meta property="og:description" content="유선 이어폰으로 JJY 전파를 흉내 냅니다. 지도에서 장소를 고르면 전파시계가 그곳 현지 시각으로 맞춰집니다.">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"JJY 시뮬레이터","url":"https://mj-best.github.io/JJY-simulator/ko/","inLanguage":"ko",
+ "description":"유선 이어폰으로 일본 표준전파 JJY를 흉내 내 전파시계를 어디서나 현지 시각으로 맞추는 웹앱.",
+ "applicationCategory":"UtilitiesApplication","operatingSystem":"Any","browserRequirements":"Web Audio API",
+ "offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}
+</script>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<main>
+  <header>
+    <h1>JJY 시뮬레이터</h1>
+    <nav class="langs"><a href="./" hreflang="ko" aria-current="page">한국어</a><a href="../?lang=en" hreflang="en">English</a><a href="../ja/" hreflang="ja">日本語</a></nav>
+    <p>유선 이어폰으로 전파시계 맞추기 · 시티즌 PMD 기준</p>
+  </header>
+
+  <section class="card">
+    <div class="map" id="map">
+      <svg id="svg" viewBox="0 20 1000 390" role="img" aria-label="세계 지도. 눌러서 시간대 선택">
+        <rect class="sea" width="1000" height="500"/>
+        <rect class="band" id="band" y="0" height="500" width="41.67"/>
+        <path class="land" id="land"/>
+        <g class="grid" id="grid"></g>
+        <g class="dots" id="dots"></g>
+        <text id="pin"></text>
+      </svg>
+    </div>
+    <p class="hint">지도에서 가고 싶은 곳을 누르면 가장 가까운 도시의 시간대가 선택됩니다. 파란 띠 = 그 시간대(경도 15° 단위).</p>
+  </section>
+
+  <section class="card">
+    <div class="now"><span id="city"></span><span id="utc"></span></div>
+    <div id="time"></div>
+    <div id="date"></div>
+    <select id="tz" aria-label="시간대 목록에서 고르기"></select>
+  </section>
+
+  <section class="card">
+    <div class="seg" role="radiogroup" aria-label="주파수">
+      <label><input type="radio" name="freq" value="13333.333" checked> 40kHz</label>
+      <label><input type="radio" name="freq" value="20000"> 60kHz</label>
+    </div>
+    <button id="go">▶ 송신 시작</button>
+    <div class="status"><span id="lamp"></span><span id="state">대기 중</span></div>
+    <div id="bits" aria-hidden="true"></div>
+  </section>
+
+  <section class="card">
+    <p class="warn">⚠ 고음이 크게 나므로 이어폰을 귀에 꽂지 마세요. 블루투스 이어폰은 안 됩니다.</p>
+    <h2>사용법</h2>
+    <ol>
+      <li>유선 이어폰을 연결하고 볼륨을 최대로.</li>
+      <li>시계를 이어폰 케이블 바로 옆(수 cm)에 둔다. 케이블을 시계에 몇 바퀴 감으면 잘 잡힌다.</li>
+      <li>송신 시작 후 시계를 <b>강제 수신</b> 모드로 (방법은 시계 설명서 참고). 수신에 2~10분.</li>
+      <li>송신 중엔 화면을 켜둔다. 안 잡히면 주파수를 바꿔 본다.</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>어떻게 동작하나요?</h2>
+    <p>폰은 40kHz를 직접 낼 수 없어서, 13.333kHz(60kHz용은 20kHz) 소리를 JJY 타임코드 패턴으로 켰다 껐다 합니다. 이어폰 케이블에서 새어 나오는 3배음(40kHz/60kHz, JJY와 같은 주파수)을 수 cm 거리의 시계 안테나가 수신합니다.</p>
+    <h2>해외에서 일본 전파시계 시간 맞추기</h2>
+    <p>JJY 전파시계는 받은 시각을 무조건 일본 시각(JST)으로 표시합니다. 지도에서 장소를 고르면 그곳 현지 시각을 대신 보내므로, 시계 설정을 바꾸지 않아도 현지 시각으로 맞춰집니다. 서머타임도 자동 반영. JJY 전파가 닿지 않는 한국·미국·유럽 어디서나 쓸 수 있습니다.</p>
+    <h2>어떤 시계가 되나요?</h2>
+    <p>JJY(40/60kHz)를 수신하는 전파시계. 시티즌, 세이코, 카시오 등 일본 내수용 모델. 시티즌 PMD 시리즈 기준으로 만들었습니다. 수신 여부는 폰 오디오 출력과 이어폰 케이블에 따라 다릅니다. WWVB·DCF77·MSF 형식은 흉내 내지 않습니다.</p>
+  </section>
+</main>
+<script type="application/json" id="t">{"start":"▶ 송신 시작","stop":"■ 송신 중지","idle":"대기 중","tx":"송신 중","major":"주요 도시","all":"전체 시간대","device":"이 기기"}</script>
+<script type="module" src="../app.js"></script>
+</body>
+</html>

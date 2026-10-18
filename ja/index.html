@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JJYシミュレーター – イヤホンで電波時計を合わせる(海外の現地時刻にも対応)</title>
+<meta name="description" content="有線イヤホンからJJY標準電波を模擬して、電波時計(シチズン・セイコー・カシオなど)を合わせる無料Webアプリ。海外でも地図で選んだ現地時刻で受信、時差設定は不要。電波の届きにくい室内でも。アプリのインストール不要。">
+<link rel="canonical" href="https://mj-best.github.io/JJY-simulator/ja/">
+<link rel="alternate" hreflang="en" href="https://mj-best.github.io/JJY-simulator/">
+<link rel="alternate" hreflang="ko" href="https://mj-best.github.io/JJY-simulator/ko/">
+<link rel="alternate" hreflang="ja" href="https://mj-best.github.io/JJY-simulator/ja/">
+<link rel="alternate" hreflang="x-default" href="https://mj-best.github.io/JJY-simulator/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mj-best.github.io/JJY-simulator/ja/">
+<meta property="og:title" content="JJYシミュレーター – イヤホンで電波時計を合わせる">
+<meta property="og:description" content="有線イヤホンからJJY標準電波を模擬。地図で場所を選ぶと、電波時計がその現地時刻に合います。">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"JJYシミュレーター","url":"https://mj-best.github.io/JJY-simulator/ja/","inLanguage":"ja",
+ "description":"有線イヤホンからJJY標準電波を模擬し、電波時計をどこでも現地時刻に合わせるWebアプリ。",
+ "applicationCategory":"UtilitiesApplication","operatingSystem":"Any","browserRequirements":"Web Audio API",
+ "offers":{"@type":"Offer","price":"0","priceCurrency":"JPY"}}
+</script>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<main>
+  <header>
+    <h1>JJYシミュレーター</h1>
+    <nav class="langs"><a href="../ko/" hreflang="ko">한국어</a><a href="../?lang=en" hreflang="en">English</a><a href="./" hreflang="ja" aria-current="page">日本語</a></nav>
+    <p>有線イヤホンで電波時計を合わせる · シチズン PMD 基準</p>
+  </header>
+
+  <section class="card">
+    <div class="map" id="map">
+      <svg id="svg" viewBox="0 20 1000 390" role="img" aria-label="世界地図。タップしてタイムゾーンを選択">
+        <rect class="sea" width="1000" height="500"/>
+        <rect class="band" id="band" y="0" height="500" width="41.67"/>
+        <path class="land" id="land"/>
+        <g class="grid" id="grid"></g>
+        <g class="dots" id="dots"></g>
+        <text id="pin"></text>
+      </svg>
+    </div>
+    <p class="hint">行き先をタップすると、最寄りの都市のタイムゾーンが選ばれます。青い帯 = そのタイムゾーン(経度15°単位)。</p>
+  </section>
+
+  <section class="card">
+    <div class="now"><span id="city"></span><span id="utc"></span></div>
+    <div id="time"></div>
+    <div id="date"></div>
+    <select id="tz" aria-label="タイムゾーン一覧から選ぶ"></select>
+  </section>
+
+  <section class="card">
+    <div class="seg" role="radiogroup" aria-label="周波数">
+      <label><input type="radio" name="freq" value="13333.333" checked> 40kHz</label>
+      <label><input type="radio" name="freq" value="20000"> 60kHz</label>
+    </div>
+    <button id="go">▶ 送信開始</button>
+    <div class="status"><span id="lamp"></span><span id="state">待機中</span></div>
+    <div id="bits" aria-hidden="true"></div>
+  </section>
+
+  <section class="card">
+    <p class="warn">⚠ 大きな高音が出るので、イヤホンを耳に入れないでください。Bluetoothイヤホンでは動作しません。</p>
+    <h2>使い方</h2>
+    <ol>
+      <li>有線イヤホンを接続し、音量を最大にする。</li>
+      <li>時計をイヤホンケーブルのすぐ近く(数cm)に置く。ケーブルを時計に数回巻くと受信しやすい。</li>
+      <li>送信開始後、時計を<b>強制受信</b>にする(方法は時計の取扱説明書を参照)。受信には2〜10分かかります。</li>
+      <li>送信中は画面をつけたままにする。受信できない場合は周波数を切り替えてみる。</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>仕組み</h2>
+    <p>スマホは40kHzを直接出せないため、13.333kHz(60kHz用は20kHz)の音をJJYタイムコードのパターンでON/OFFします。イヤホンケーブルから漏れる第3高調波(40kHz/60kHz、JJYと同じ周波数)を、数cm離れた時計のアンテナが受信します。</p>
+    <h2>海外で電波時計を合わせる</h2>
+    <p>JJY電波時計は受信した時刻を常に日本時間(JST)として表示します。地図で場所を選ぶと、その現地時刻を代わりに送信するので、時計の設定を変えずに現地時刻に合わせられます。サマータイムも自動で反映。JJYが届かない海外や、電波の入りにくい室内でも使えます。</p>
+    <h2>対応する時計</h2>
+    <p>JJY(40/60kHz)を受信する電波時計。シチズン、セイコー、カシオなどの国内モデル。シチズン PMD シリーズを基準に作っています。受信できるかはスマホの音声出力とイヤホンケーブルによります。WWVB・DCF77・MSF形式には対応していません。</p>
+  </section>
+</main>
+<script type="application/json" id="t">{"start":"▶ 送信開始","stop":"■ 送信停止","idle":"待機中","tx":"送信中","major":"主要都市","all":"すべてのタイムゾーン","device":"この端末"}</script>
+<script type="module" src="../app.js"></script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # JJY Simulator
 
-**https://mj-best.github.io/JJY-simulator/** · [한국어](https://mj-best.github.io/JJY-simulator/?lang=ko) · [English](https://mj-best.github.io/JJY-simulator/?lang=en) · [日本語](https://mj-best.github.io/JJY-simulator/?lang=ja)
+**https://mj-best.github.io/JJY-simulator/** · [한국어](https://mj-best.github.io/JJY-simulator/ko/) · [English](https://mj-best.github.io/JJY-simulator/?lang=en) · [日本語](https://mj-best.github.io/JJY-simulator/ja/)
 
 ## 한국어
 유선 이어폰으로 JJY 표준전파를 흉내 내 전파시계(시티즌 PMD 기준)를 맞추는 웹페이지.
