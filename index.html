@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JJY Simulator</title>
+<style>
+  :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+  body { max-width: 34rem; margin: 0 auto; padding: 1rem; line-height: 1.5; }
+  label { display: block; margin: .75rem 0; }
+  select, button { font: inherit; width: 100%; padding: .6rem; margin-top: .25rem; }
+  button { font-size: 1.25rem; font-weight: bold; }
+  #clock { font-size: 2rem; font-variant-numeric: tabular-nums; margin: 1rem 0 .25rem; }
+  #bits { font-family: ui-monospace, monospace; word-break: break-all; letter-spacing: .1em; }
+  #bits b { background: #f80; color: #000; }
+  .warn { color: #d33; }
+</style>
+</head>
+<body>
+<h1>JJY Simulator</h1>
+
+<label>시계에 표시할 시간대
+  <select id="tz"></select>
+</label>
+<label>주파수
+  <select id="freq">
+    <option value="13333.333">JJY 40kHz (13.333kHz의 3배음)</option>
+    <option value="20000">JJY 60kHz (20kHz의 3배음)</option>
+  </select>
+</label>
+<button id="go">▶ 송신 시작</button>
+
+<div id="clock"></div>
+<div id="bits"></div>
+
+<h2>사용법</h2>
+<ol>
+  <li>유선 이어폰을 연결하고 볼륨을 최대로.</li>
+  <li>시계를 이어폰 케이블 바로 옆(수 cm)에 둔다. 케이블을 시계에 몇 바퀴 감으면 잘 잡힌다.</li>
+  <li>송신 시작 후 시계를 <b>강제 수신</b> 모드로 (방법은 시계 설명서 참고). 수신에 2~10분 걸린다.</li>
+  <li>송신 중엔 화면을 켜둔다 (자동으로 꺼짐 방지 요청함).</li>
+</ol>
+<p class="warn">⚠ 고주파 소리가 크게 나므로 이어폰을 귀에 꽂지 마세요. 블루투스 이어폰은 동작하지 않습니다.</p>
+<p>시간대를 바꾸면 그 지역 현지 시각을 일본시(JST)인 것처럼 송신합니다. 시계의 시차 설정 없이 현지 시각으로 맞춰집니다. 기본값은 이 기기의 시간대.</p>
+
+<script type="module">
+import { fields, frame, HIGH } from './jjy.js';
+
+const $ = id => document.getElementById(id);
+const device = Intl.DateTimeFormat().resolvedOptions().timeZone;
+for (const z of new Set([device, 'Asia/Tokyo', ...Intl.supportedValuesOf('timeZone')]))
+  $('tz').add(new Option(z === device ? `${z} (이 기기)` : z, z));
+
+let ctx, gain, wake, next;
+
+async function start() {
+  if (navigator.audioSession) navigator.audioSession.type = 'playback'; // iOS: ignore silent switch
+  ctx = new AudioContext();
+  const osc = new OscillatorNode(ctx, { frequency: +$('freq').value });
+  gain = new GainNode(ctx, { gain: 0 });
+  osc.connect(gain).connect(ctx.destination);
+  osc.start();
+  next = Math.ceil(Date.now() / 1000) * 1000;
+  $('go').textContent = '■ 송신 중지';
+  wake = await navigator.wakeLock?.request('screen').catch(() => null);
+}
+
+function stop() {
+  ctx.close();
+  wake?.release();
+  ctx = wake = null;
+  $('go').textContent = '▶ 송신 시작';
+}
+
+// Queue each second's pulse ~3 s ahead on the audio clock.
+function schedule() {
+  const ts = ctx.getOutputTimestamp?.() ?? {};
+  // Output timestamp maps audio time to what is actually leaving the jack (includes latency).
+  const [ctxNow, wallNow] = ts.performanceTime
+    ? [ts.contextTime, performance.timeOrigin + ts.performanceTime]
+    : [ctx.currentTime, Date.now()];
+  for (; next < wallNow + 3000; next += 1000) {
+    const at = ctxNow + (next - wallNow) / 1000;
+    if (at < ctx.currentTime) continue;
+    const d = new Date(next);
+    const sym = frame(fields(d, $('tz').value))[d.getUTCSeconds()];
+    gain.gain.setValueAtTime(1, at);
+    gain.gain.setValueAtTime(0, at + HIGH[sym]);
+  }
+}
+
+function render() {
+  const now = new Date(), tz = $('tz').value;
+  $('clock').textContent = now.toLocaleString('ko-KR', { timeZone: tz, hourCycle: 'h23' });
+  const s = now.getUTCSeconds();
+  $('bits').innerHTML = frame(fields(now, tz)).map((b, i) => i === s && ctx ? `<b>${b}</b>` : b).join('');
+}
+
+setInterval(() => { if (ctx) schedule(); render(); }, 200);
+render();
+
+$('go').onclick = () => (ctx ? stop() : start());
+$('tz').onchange = $('freq').onchange = () => ctx && (stop(), start());
+</script>
+</body>
+</html>
