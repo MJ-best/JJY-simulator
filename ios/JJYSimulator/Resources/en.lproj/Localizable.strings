@@ -1,0 +1,34 @@
+"app.title" = "JJY Simulator";
+"app.subtitle" = "Sync a radio-controlled watch through wired earphones · built for Citizen PMD";
+
+"map.accessibility" = "World map. Tap to pick a time zone";
+"map.hint" = "Tap where you are going and the nearest city’s time zone is selected. Blue band = that zone (15° of longitude).";
+
+"tz.picker.accessibility" = "Pick from the time zone list";
+"tz.picker.title" = "Time Zone";
+"tz.search.placeholder" = "Search city or time zone";
+"tz.major" = "Major cities";
+"tz.all" = "All time zones";
+"tz.device" = "this device";
+
+"common.close" = "Close";
+
+"freq.accessibility" = "Frequency";
+"tx.start" = "▶ Start";
+"tx.stop" = "■ Stop";
+"tx.idle" = "Idle";
+"tx.transmitting" = "Transmitting";
+
+"guide.warning" = "⚠ Loud high-pitched tone. Do not put the earphones in your ears. Bluetooth earphones will not work.";
+"guide.title" = "How to use";
+"guide.step1" = "Plug in wired earphones and turn the volume all the way up.";
+"guide.step2" = "Place the watch right next to the earphone cable (a few cm). Wrapping the cable around the watch a few times helps.";
+"guide.step3" = "Press Start, then put the watch into **manual (forced) reception** (see your watch manual). It takes 2–10 minutes.";
+"guide.step4" = "Keep the screen on while transmitting. If it does not catch, try the other frequency.";
+
+"faq.how.title" = "How does it work?";
+"faq.how.body" = "iPhones and iPads cannot output 40 kHz directly, so the app plays a 13.333 kHz tone (20 kHz for the 60 kHz station) switched on and off in the JJY time-code pattern. The earphone cable leaks its third harmonic, 40 kHz or 60 kHz, the same frequencies JJY uses, and the watch antenna picks it up from a few centimeters away.";
+"faq.abroad.title" = "Using a Japanese radio-controlled watch abroad";
+"faq.abroad.body" = "JJY watches always read the signal as Japan time (JST). Pick a place on the map and the app sends that place’s local time instead, so the watch shows local time without changing any setting. Daylight saving time is applied automatically. Works in the US, Europe, Korea or anywhere JJY does not reach, and indoors in Japan where the real signal is weak.";
+"faq.watches.title" = "Which watches work?";
+"faq.watches.body" = "Watches that receive JJY (40/60 kHz), such as Citizen, Seiko and Casio models made for Japan. Built and tuned for the Citizen PMD series. Reception depends on the device’s audio output and the earphone cable. It does not imitate WWVB, DCF77 or MSF.";

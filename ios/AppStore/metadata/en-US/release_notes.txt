@@ -1,0 +1,4 @@
+Initial release of JJY Simulator for iPhone and iPad.
+• Sample-accurate 40 kHz / 60 kHz JJY time-code audio transmission
+• Offline bundled world map with 62 major cities and all IANA time zones
+• Real-time 60-second JJY pulse visualizer and Light / Dark Mode support
