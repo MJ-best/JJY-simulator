@@ -1,0 +1,14 @@
+App Review Notes for JJY Simulator:
+
+1. Purpose & Audio Behavior:
+This utility simulates Japan's NICT JJY radio time signal (40 kHz or 60 kHz) for setting Japanese radio-controlled watches (such as Citizen PMD, Seiko, and Casio) when outdoors reception is unavailable or while traveling abroad. Because mobile devices cannot directly output 40 kHz / 60 kHz, the app intentionally outputs a 13.333 kHz (or 20 kHz) sine wave modulated on/off in the 60-second JJY pulse-width pattern (0.8s / 0.5s / 0.2s). The third harmonic leaking from wired earphones is received by the watch's internal antenna placed next to the cable.
+
+2. Ear Safety & Hardware Safeguards:
+- A prominent red warning instructs users never to place earphones in their ears while transmitting and notes that Bluetooth earphones are unsupported.
+- Transmission automatically stops if wired headphones are disconnected (AVAudioSession.routeChangeNotification .oldDeviceUnavailable) or if an audio interruption begins (e.g., incoming call).
+
+3. How to Test Without a Radio-Controlled Watch:
+- Launch the app (no sign-in or network connection required; the world map is bundled offline).
+- Tap any region on the world map or open the Time Zone selector to verify local time, UTC offset, DST handling, and map centering.
+- Toggle between 40kHz and 60kHz and tap Start to observe the live blinking carrier lamp, active 60-second JJY time-code pulse visualization, and audio output (please keep earphones out of ears when testing audio).
+- Rotate or test on iPad to verify the adaptive two-column layout and Light/Dark Mode.

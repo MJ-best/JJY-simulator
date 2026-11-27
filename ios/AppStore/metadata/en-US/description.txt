@@ -1,0 +1,29 @@
+Simulate Japan's JJY standard time signal (40 kHz / 60 kHz) through wired earphones to synchronize your Japanese radio-controlled (atomic) watch anywhere in the world.
+
+Whether you are traveling outside Japan where JJY does not reach, or indoors where radio reception is weak, JJY Simulator lets you sync your watch reliably in minutes.
+
+KEY FEATURES
+• 40 kHz & 60 kHz JJY Time-Code Synthesis
+  Generates a sample-accurate 13.333 kHz (for 40 kHz) or 20 kHz (for 60 kHz) sine wave keyed to the official NICT JJY pulse pattern. The third harmonic (40 / 60 kHz) emitted from the wired earphone cable is picked up by the watch antenna from a few centimeters away.
+• Time-Zone Override with Automatic DST
+  JJY watches always interpret received signals as Japan Standard Time (JST). Select any city on the map or list and the app transmits that city's local time in JST's place—so your watch displays local time abroad without changing watch settings. Daylight saving time is applied automatically.
+• Built-In Offline World Map
+  Natural Earth vector map data is bundled directly in the app, so tapping your destination works completely offline—even in airplane mode or abroad without data roaming.
+• Global Time-Zone Search
+  Includes 62 curated major cities on the map plus every IANA time zone. Defaults to your device's current time zone so abroad you can simply open the app and tap Start.
+• Live 60-Second Time-Code Visualizer
+  Watch the blinking carrier indicator and all 60 pulse bars (0, 1, and Marker symbols) update in real time.
+• Designed for iPhone & iPad
+  Adaptive single-column iPhone layout and two-column iPad layout with full Light and Dark Mode support. Keeps the screen awake while transmitting and safely stops if headphones are unplugged.
+
+HOW TO USE
+1. Plug in wired earphones (including USB-C or Lightning adapters) and turn volume all the way up.
+2. Place the watch right next to the earphone cable (a few cm). Wrapping the cable loosely around the watch a few times helps.
+3. Tap Start, then place your watch into manual (forced) reception mode (refer to your watch manual). Syncing typically takes 2–10 minutes.
+4. Keep the screen on while transmitting. If reception does not lock, try switching between 40 kHz and 60 kHz.
+
+SAFETY & COMPATIBILITY
+• Loud high-pitched tone: NEVER put the earphones in your ears while transmitting.
+• Bluetooth earphones do not work; wired earphones are required.
+• Compatible with JJY (40/60 kHz) radio-controlled watches such as Citizen (built and tuned for the Citizen PMD series), Seiko, and Casio Japan domestic models. Does not emulate WWVB, DCF77, or MSF.
+• Completely private: no ads, no accounts, no analytics, and zero data collection.

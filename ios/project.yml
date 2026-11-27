@@ -1,0 +1,53 @@
+name: JJYSimulator
+options:
+  bundleIdPrefix: com.mjbest
+  deploymentTarget:
+    iOS: "16.0"
+  developmentLanguage: en
+  knownRegions:
+    - en
+    - ko
+    - ja
+    - Base
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+targets:
+  JJYSimulator:
+    type: application
+    platform: iOS
+    sources:
+      - path: JJYSimulator
+        excludes:
+          - Info.plist
+    info:
+      path: JJYSimulator/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mjbest.jjysimulator
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_STYLE: Automatic
+  JJYSimulatorTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: JJYSimulatorTests
+    dependencies:
+      - target: JJYSimulator
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mjbest.jjysimulator.tests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+schemes:
+  JJYSimulator:
+    build:
+      targets:
+        JJYSimulator: all
+    test:
+      targets:
+        - JJYSimulatorTests
